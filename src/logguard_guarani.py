@@ -4,12 +4,16 @@
 LogGuard Guaraní — Analizador de logs Apache para SIU Guaraní (UNRN)
 Analiza los request a la API del SIU para detectar anomalias.
 
+Novedades v1.1:
+  - Score de riesgo numérico por request
+  - Clasificación de tipo de ataque (INJECTION, PATH_TRAVERSAL, SCANNER, ...)
+  - Top IPs en el resumen final (más requests, más anomalías, más errores)
+
 Uso:
     python3 logguard_guarani.py <archivo_de_log>
     python3 logguard_guarani.py <archivo_de_log> --solo-anomalos
     python3 logguard_guarani.py <archivo_de_log> --exportar reporte.csv
 
-    Ejemplo: python3 logguard_guarani.py Log\ Reales\ UNRN/logs_apache_2026-04-19/gestiong3.unrn.edu.ar-access.log.1
 """
 
 import argparse
@@ -247,6 +251,110 @@ def detectar_scanner(ua):
 
 
 # ─────────────────────────────────────────────
+# SCORE DE RIESGO
+# Cada regla suma puntos independientemente.
+# El score NO reemplaza la etiqueta — es información adicional.
+# ─────────────────────────────────────────────
+def calcular_score(url, ua, status, razones):
+    score = 0
+    razones_str = " ".join(razones).lower()
+
+    # ── Señales de URL ──────────────────────────────────
+    if detectar_inyeccion(url):
+        score += 50
+    if detectar_path_traversal(url):
+        score += 40
+    if longitud_url_sospechosa(url):
+        score += 10
+
+    # ── Señales de User-Agent ────────────────────────────
+    if detectar_scanner(ua):
+        score += 30
+    elif not es_ua_conocido(ua) and ua not in ("-", ""):
+        score += 10
+
+    # ── Señales de status HTTP ───────────────────────────
+    if status == 403:
+        score += 15
+    elif status == 404:
+        score += 10
+    elif status >= 500:
+        score += 20
+
+    return score
+
+
+# ─────────────────────────────────────────────
+# CLASIFICACIÓN DE TIPO DE ATAQUE
+# ─────────────────────────────────────────────
+
+TIPOS_ATAQUE = [
+    "INJECTION",
+    "PATH_TRAVERSAL",
+    "SCANNER",
+    "ERROR_ABUSE",
+    "DESCONOCIDO",
+]
+
+
+def clasificar_tipo_ataque(url, ua, status, etiqueta, razones):
+
+    if etiqueta in ("IGNORAR", "NORMAL", "OBSERVAR"):
+        return None
+
+    if detectar_inyeccion(url):
+        return "INJECTION"
+    if detectar_path_traversal(url):
+        return "PATH_TRAVERSAL"
+    if detectar_scanner(ua):
+        return "SCANNER"
+    if status in (403, 404):
+        return "ERROR_ABUSE"
+
+    return "DESCONOCIDO"
+
+
+# ─────────────────────────────────────────────
+# TOP IPs — se llama desde imprimir_resumen()
+# ─────────────────────────────────────────────
+def imprimir_top_ips(registros, resultados, n=5):
+
+    total_por_ip = defaultdict(int)
+    anomalos_por_ip = defaultdict(int)
+    errores_por_ip = defaultdict(int)
+
+    for req in registros:
+        total_por_ip[req["ip"]] += 1
+        if req["status"] in (403, 404):
+            errores_por_ip[req["ip"]] += 1
+
+    for req, etiqueta, *_ in resultados:
+        if etiqueta in ("ANOMALO", "SOSPECHOSO"):
+            anomalos_por_ip[req["ip"]] += 1
+
+    def ranking(d, titulo, color_val):
+        items = sorted(d.items(), key=lambda x: x[1], reverse=True)[:n]
+        if not items:
+            return
+        print(colorear(f"  {titulo}", C.BOLD + C.WHITE))
+        for i, (ip, val) in enumerate(items, 1):
+            barra = "█" * min(val, 30)
+            print(
+                f"{colorear(str(i).rjust(2), C.GREY)}. "
+                f"{colorear(ip.ljust(16), C.WHITE)} "
+                f"{colorear(str(val).rjust(5), color_val)} "
+                f"{colorear(barra, color_val)}"
+            )
+        print()
+
+    print(colorear("  TOP IPs:", C.BOLD + C.WHITE))
+    print()
+    ranking(total_por_ip, "Por volumen total de requests:", C.CYAN)
+    ranking(anomalos_por_ip, "Por requests ANOMALO/SOSPECHOSO:", C.RED)
+    ranking(errores_por_ip, "Por errores HTTP (403 + 404):", C.YELLOW)
+
+
+# ─────────────────────────────────────────────
 # MOTOR DE ANÁLISIS PRINCIPAL
 # ─────────────────────────────────────────────
 def analizar_request(req, contexto_ip):
@@ -407,7 +515,7 @@ def imprimir_header():
     print()
 
 
-def imprimir_resultado(req, etiqueta, razones, num):
+def imprimir_resultado(req, etiqueta, razones, num, score=0, tipo_ataque=None):
     color, icono = ETIQUETA_CONFIG.get(etiqueta, (C.WHITE, "?"))
 
     fecha_corta = req["fecha"].split(":")[0][1:]  # "19/Apr/2026"
@@ -417,19 +525,25 @@ def imprimir_resultado(req, etiqueta, razones, num):
     if len(req["url"]) > 55:
         linea_req += "…"
 
+    score_str = colorear(
+        f"[{score:>3}]", C.RED if score >= 40 else C.YELLOW if score >= 15 else C.GREY
+    )
+    tipo_str = colorear(f" {tipo_ataque}", C.MAGENTA) if tipo_ataque else ""
+
     print(
         f"  {colorear(icono, color)} "
         f"{colorear(etiqueta.ljust(10), color + C.BOLD)} "
         f"{colorear(f'[{hora}]', C.GREY)} "
         f"{colorear(req['ip'].ljust(15), C.WHITE)} "
         f"{colorear(str(req['status']), color)} "
+        f"{score_str}{tipo_str} "
         f"{linea_req}"
     )
     for razon in razones:
         print(f"    {colorear('→', C.GREY)} {colorear(razon, color)}")
 
 
-def imprimir_resumen(stats, alertas_ip):
+def imprimir_resumen(stats, alertas_ip, registros=None, resultados=None):
     print()
     print(colorear("─" * 72, C.BOLD))
     print(colorear("  RESUMEN", C.BOLD + C.WHITE))
@@ -460,6 +574,9 @@ def imprimir_resumen(stats, alertas_ip):
                 print(f"      {a}")
         print()
 
+    if registros and resultados:
+        imprimir_top_ips(registros, resultados)
+
     print(colorear("─" * 72, C.BOLD))
     print()
 
@@ -481,11 +598,13 @@ def exportar_csv(resultados, path):
                 "bytes",
                 "ua",
                 "etiqueta",
+                "tipo_ataque",
+                "score",
                 "razones",
             ],
         )
         writer.writeheader()
-        for req, etiqueta, razones in resultados:
+        for req, etiqueta, razones, score, tipo_ataque in resultados:
             writer.writerow(
                 {
                     "fecha": req["fecha"],
@@ -497,6 +616,8 @@ def exportar_csv(resultados, path):
                     "bytes": req["bytes"],
                     "ua": req["ua"],
                     "etiqueta": etiqueta,
+                    "tipo_ataque": tipo_ataque or "",
+                    "score": score,
                     "razones": " | ".join(razones),
                 }
             )
@@ -550,21 +671,27 @@ def main():
 
     for req in registros:
         etiqueta, razones = analizar_request(req, contexto_ip=None)
+        score = calcular_score(req["url"], req["ua"], req["status"], razones)
+        tipo_ataque = clasificar_tipo_ataque(
+            req["url"], req["ua"], req["status"], etiqueta, razones
+        )
         stats[etiqueta] += 1
-        resultados.append((req, etiqueta, razones))
+        resultados.append((req, etiqueta, razones, score, tipo_ataque))
 
         if etiqueta == "IGNORAR":
             continue
         if args.solo_anomalos and etiqueta in ["NORMAL", "OBSERVAR"]:
             continue
 
-        imprimir_resultado(req, etiqueta, razones, 0)
+        imprimir_resultado(
+            req, etiqueta, razones, 0, score=score, tipo_ataque=tipo_ataque
+        )
 
     # ── Patrones por IP ──────────────────────────────────
     alertas_ip = analizar_patrones_ip(registros)
 
     # ── Resumen ──────────────────────────────────────────
-    imprimir_resumen(stats, alertas_ip)
+    imprimir_resumen(stats, alertas_ip, registros=registros, resultados=resultados)
 
     # ── Exportar CSV ─────────────────────────────────────
     if args.exportar:
