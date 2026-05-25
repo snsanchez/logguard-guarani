@@ -6,5 +6,4 @@
 !.gitignore
 !src/
 !src/logguard_guarani.py
-!docs/
-!docs/img
+!docs/*
