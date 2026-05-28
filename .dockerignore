@@ -1,0 +1,14 @@
+data/
+outputs/
+
+.git/
+.gitignore
+
+__pycache__/
+*.pyc
+*.pyo
+
+docs/img/
+
+*.gz
+*.tar.gz

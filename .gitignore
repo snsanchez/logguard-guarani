@@ -1,12 +1,57 @@
-# Ignorar TODO
-*
+# ─────────────────────────────────────────────
+# Logs reales y datasets
+# ─────────────────────────────────────────────
+data/
+*.log
+*.log.*
+*.gz
+*.tar.gz
 
-# Permitir:
-!README.md
-!.gitignore
-!src/
-!src/logguard_guarani.py
-!docs/
-!docs/**
-!docs/img/
-!docs/img/**
+# ─────────────────────────────────────────────
+# Outputs generados
+# ─────────────────────────────────────────────
+outputs/
+reports/
+*.csv
+*.jsonl
+
+# ─────────────────────────────────────────────
+# ML / modelos futuros
+# ─────────────────────────────────────────────
+svm/*.pkl
+svm/*.joblib
+svm/dataset*.csv
+
+# ─────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtualenvs
+venv/
+.venv/
+
+# Packaging
+dist/
+build/
+*.egg-info/
+
+# ─────────────────────────────────────────────
+# IDEs / sistema operativo
+# ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+.DS_Store
+Thumbs.db
+
+# ─────────────────────────────────────────────
+# Variables de entorno
+# ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
