@@ -155,3 +155,25 @@ La arquitectura futura contempla integración con:
 - modelos de clasificación
 - correlación de eventos
 - automatización de respuestas de seguridad
+
+---
+## Docker
+
+Construir imagen:
+
+```bash
+docker build -t san2s/logguard-guarani:1.0 -f docker/Dockerfile .
+```
+
+Ejecutar:
+
+```bash
+docker run --rm \
+  -v /ruta/logs:/data \
+  san2s/logguard-guarani:1.0 \
+  /data/access.log --solo-anomalos
+```
+
+Imagen oficial:
+docker pull san2s/logguard-guarani:1.0
+
