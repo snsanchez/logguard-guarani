@@ -1,4 +1,10 @@
-# LogGuard Guaraní
+<div align="center">
+  <a href="https://snsanchez.github.io/logguard-guarani/" target="_blank">
+    <img src="https://github.com/snsanchez/logguard-guarani/blob/main/docs/img/lgg_logo_nobg.png" alt="Logguard Logo" width="20%" />
+  </a>
+  <h1>LogGuard Guaraní</h1>
+  <br>
+</div>
 
 Analizador de logs Apache orientado a la detección de anomalías, actividad sospechosa y posibles ataques sobre implementaciones del sistema SIU Guaraní.
 
