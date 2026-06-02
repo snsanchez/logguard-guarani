@@ -1,6 +1,5 @@
 # ─────────────────────────────────────────────────────────────────
 # LogGuard Guaraní — Dockerfile
-# Imagen mínima: solo Python stdlib, sin dependencias externas.
 #
 # Build:
 #   docker build -t logguard-guarani:1.0 .
@@ -17,7 +16,7 @@ FROM python:3.11-slim
 # ─────────────────────────────────────────────
 LABEL org.opencontainers.image.title="LogGuard Guaraní"
 LABEL org.opencontainers.image.description="Analizador defensivo de logs Apache para SIU Guaraní"
-LABEL org.opencontainers.image.version="1.0"
+LABEL org.opencontainers.image.version="2.0"
 LABEL org.opencontainers.image.authors="Santiago Sánchez"
 LABEL org.opencontainers.image.licenses="GPL-3.0"
 LABEL org.opencontainers.image.source="https://github.com/snsanchez/logguard-guarani"
@@ -33,9 +32,17 @@ RUN useradd --create-home --shell /bin/bash logguard
 WORKDIR /app
 
 # ─────────────────────────────────────────────
+# Instalar dependencias (para ML)
+# ─────────────────────────────────────────────
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ─────────────────────────────────────────────
 # Copiar source
 # ─────────────────────────────────────────────
-COPY src/logguard_guarani.py .
+COPY src/ src/
+COPY core/ core/
+COPY ml/ ml/
 
 # Ownership correcta
 RUN chown -R logguard:logguard /app
@@ -47,4 +54,4 @@ USER logguard
 VOLUME ["/data"]
 
 # Entrypoint principal
-ENTRYPOINT ["python3", "/app/logguard_guarani.py"]
+ENTRYPOINT ["python3", "/app/src/logguard_guarani.py"]

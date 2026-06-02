@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 """
-23/04/26
 LogGuard Guaraní — Analizador de logs Apache para SIU Guaraní (UNRN)
 Analiza los request a la API del SIU para detectar anomalias.
 
-Novedades v1.1:
-  - Score de riesgo numérico por request
-  - Clasificación de tipo de ataque (INJECTION, PATH_TRAVERSAL, SCANNER, ...)
-  - Top IPs en el resumen final (más requests, más anomalías, más errores)
-
 Uso:
-    python3 logguard_guarani.py <archivo_de_log>
-    python3 logguard_guarani.py <archivo_de_log> --solo-anomalos
-    python3 logguard_guarani.py <archivo_de_log> --exportar reporte.csv
-
+    python3 logguard_guarani.py access.log
+    python3 logguard_guarani.py access.log --solo-anomalos --exportar reporte.csv
 """
 
 import argparse
-import csv
-import re
 import sys
 from collections import defaultdict
-from datetime import datetime
-from urllib.parse import unquote
+
+from core.attack_classifier import clasificar_tipo_ataque
+from core.exporter import exportar_jsonl
+from core.heuristics import (
+    detectar_inyeccion,
+    detectar_path_traversal,
+    detectar_scanner,
+    es_flujo_sso,
+    es_internal_dummy,
+    es_red_interna,
+    es_ruta_legitima,
+    es_ua_conocido,
+    es_version_vieja,
+    longitud_url_sospechosa,
+)
+from core.parser import parsear_linea
+from core.scoring import calcular_score
+from ml.infer import clasificar_evento
 
 
 # ─────────────────────────────────────────────
@@ -45,246 +51,6 @@ def colorear(texto, color):
 
 
 # ─────────────────────────────────────────────
-# CONOCIMIENTO DEL DOMINIO: SIU GUARANÍ
-# ─────────────────────────────────────────────
-
-# Prefijos de rutas conocidas y legítimas del SIU Guaraní
-RUTAS_LEGITIMAS = [
-    "/guarani/3.21/aplicacion.php",
-    "/guarani/3.21/rest/v2/",
-    "/guarani/3.21/css/",
-    "/guarani/3.21/js/",
-    "/guarani/3.21/skins/",
-    "/guarani/3.21/jquery",
-    "/guarani/3.21/?acs",  # SSO SAML assertion consumer
-    "/guarani/3.21/",
-    "/guarani_pers/3.21/css/",
-    "/toba_3.3/",  # Framework TOBA
-    "/favicon.ico",  # Automático del browser — siempre ignorar
-]
-
-# Versiones antiguas del SIU (ya no deberían usarse)
-VERSIONES_VIEJAS = [
-    "/guarani/3.17/",
-    "/guarani/3.18/",
-    "/guarani/3.19/",
-    "/guarani/3.20/",
-]
-
-# User-Agents conocidos y legítimos en este entorno
-USER_AGENTS_CONOCIDOS = [
-    "Mozilla/5.0",  # Browsers normales
-    "Java/",  # Servicio interno (SPA, integraciones)
-    "Apache/",  # Internal dummy connection de Apache
-    "GuzzleHttp/",  # Cliente HTTP PHP (integraciones internas)
-]
-
-# IPs internas de la red UNRN (ajustar según la realidad)
-REDES_INTERNAS = [
-    "10.",
-    "172.16.",
-    "172.17.",
-    "172.18.",
-    "172.19.",
-    "172.20.",
-    "172.21.",
-    "172.22.",
-    "172.23.",
-    "172.24.",
-    "172.25.",
-    "172.26.",
-    "172.27.",
-    "172.28.",
-    "172.29.",
-    "172.30.",
-    "172.31.",
-    "192.168.",
-    "::1",
-    "127.",
-]
-
-# Patrón de internal dummy connection de Apache — siempre ignorar
-APACHE_INTERNAL_UA = "Apache/"
-
-# ─────────────────────────────────────────────
-# REGEX PARA PARSEAR EL LOG
-# Formato: IP - usuario [fecha] "METODO URL PROTO" status bytes "referer" "UA"
-# ─────────────────────────────────────────────
-LOG_REGEX = re.compile(
-    r"(?P<ip>\S+)\s+"  # IP
-    r"\S+\s+"  # ident (siempre -)
-    r"(?P<usuario>\S+)\s+"  # usuario autenticado o -
-    r"\[(?P<fecha>[^\]]+)\]\s+"  # [fecha]
-    r'"(?P<request>[^"]+)"\s+'  # "METODO URL PROTO"
-    r"(?P<status>\d{3})\s+"  # código de status
-    r"(?P<bytes>\S+)\s+"  # bytes
-    r'"(?P<referer>[^"]*)"\s+'  # "referer"
-    r'"(?P<ua>[^"]*)"'  # "user-agent"
-)
-
-
-# ─────────────────────────────────────────────
-# PARSER DE UNA LÍNEA
-# ─────────────────────────────────────────────
-def parsear_linea(linea):
-    m = LOG_REGEX.match(linea.strip())
-    if not m:
-        return None
-
-    request = m.group("request")
-    partes = request.split(" ")
-    metodo = partes[0] if len(partes) >= 1 else ""
-    url = partes[1] if len(partes) >= 2 else ""
-    proto = partes[2] if len(partes) >= 3 else ""
-
-    bytes_raw = m.group("bytes")
-    bytes_val = int(bytes_raw) if bytes_raw.isdigit() else 0
-
-    return {
-        "ip": m.group("ip"),
-        "usuario": m.group("usuario"),
-        "fecha": m.group("fecha"),
-        "metodo": metodo,
-        "url": url,
-        "url_dec": unquote(url),  # URL decodificada para análisis
-        "proto": proto,
-        "status": int(m.group("status")),
-        "bytes": bytes_val,
-        "referer": m.group("referer"),
-        "ua": m.group("ua"),
-        "linea": linea.strip(),
-    }
-
-
-# ─────────────────────────────────────────────
-# FUNCIONES DE CONTEXTO
-# ─────────────────────────────────────────────
-def es_red_interna(ip):
-    return any(ip.startswith(r) for r in REDES_INTERNAS)
-
-
-def es_ruta_legitima(url):
-    path = url.split("?")[0]
-    return any(path.startswith(r) for r in RUTAS_LEGITIMAS)
-
-
-def es_version_vieja(url):
-    return any(url.startswith(v) for v in VERSIONES_VIEJAS)
-
-
-def es_ua_conocido(ua):
-    return any(ua.startswith(k) for k in USER_AGENTS_CONOCIDOS)
-
-
-def es_internal_dummy(req):
-    """Internal dummy connection de Apache — completamente ignorar."""
-    return "Apache/" in req.get("ua", "")
-
-
-def es_flujo_sso(req):
-    """Redirects 302 parte del flujo SAML/SSO son normales."""
-    return req["status"] == 302 and (
-        "?acs" in req["url"] or req["url"] in ["/", "/guarani/3.21/"]
-    )
-
-
-def longitud_url_sospechosa(url):
-    """URLs muy largas pueden ser intentos de inyección, pero en Guaraní
-    hay filtros legítimos que generan URLs largas."""
-    url_dec = unquote(url)
-    # Umbral: más de 400 caracteres Y no parece un filtro normal de Guaraní
-    if len(url_dec) > 400:
-        # URLs con parámetros de filtro conocidos del Guaraní son normales
-        parametros_guarani = ["filtrado-ce", "cascadas", "tsd=", "ts=", "ai=", "ah="]
-        if any(p in url_dec for p in parametros_guarani):
-            return False  # largo pero legítimo
-        return True
-    return False
-
-
-def detectar_path_traversal(url):
-    url_dec = unquote(url)
-    patrones = ["../", "..\\", "%2e%2e", "....//"]
-    return any(p in url_dec.lower() for p in patrones)
-
-
-def detectar_inyeccion(url):
-    url_dec = unquote(url).lower()
-    patrones = [
-        "select ",
-        "union ",
-        "insert ",
-        "drop ",
-        "delete ",  # SQLi
-        "<script",
-        "javascript:",
-        "onerror=",
-        "onload=",  # XSS
-        "/etc/passwd",
-        "/proc/self",
-        "cmd=",
-        "exec(",  # RCE/LFI
-    ]
-    return any(p in url_dec for p in patrones)
-
-
-def detectar_scanner(ua):
-    """User-agents típicos de scanners y bots maliciosos."""
-    ua_lower = ua.lower()
-    scanners = [
-        "sqlmap",
-        "nikto",
-        "nmap",
-        "masscan",
-        "zgrab",
-        "dirbuster",
-        "gobuster",
-        "wfuzz",
-        "burpsuite",
-        "python-requests",
-        "curl/",
-        "wget/",
-        "go-http-client",
-        "libwww-perl",
-    ]
-    return any(s in ua_lower for s in scanners)
-
-
-# ─────────────────────────────────────────────
-# SCORE DE RIESGO
-# Cada regla suma puntos independientemente.
-# El score NO reemplaza la etiqueta — es información adicional.
-# ─────────────────────────────────────────────
-def calcular_score(url, ua, status, razones):
-    score = 0
-    razones_str = " ".join(razones).lower()
-
-    # ── Señales de URL ──────────────────────────────────
-    if detectar_inyeccion(url):
-        score += 50
-    if detectar_path_traversal(url):
-        score += 40
-    if longitud_url_sospechosa(url):
-        score += 10
-
-    # ── Señales de User-Agent ────────────────────────────
-    if detectar_scanner(ua):
-        score += 30
-    elif not es_ua_conocido(ua) and ua not in ("-", ""):
-        score += 10
-
-    # ── Señales de status HTTP ───────────────────────────
-    if status == 403:
-        score += 15
-    elif status == 404:
-        score += 10
-    elif status >= 500:
-        score += 20
-
-    return score
-
-
-# ─────────────────────────────────────────────
 # CLASIFICACIÓN DE TIPO DE ATAQUE
 # ─────────────────────────────────────────────
 
@@ -295,23 +61,6 @@ TIPOS_ATAQUE = [
     "ERROR_ABUSE",
     "DESCONOCIDO",
 ]
-
-
-def clasificar_tipo_ataque(url, ua, status, etiqueta, razones):
-
-    if etiqueta in ("IGNORAR", "NORMAL", "OBSERVAR"):
-        return None
-
-    if detectar_inyeccion(url):
-        return "INJECTION"
-    if detectar_path_traversal(url):
-        return "PATH_TRAVERSAL"
-    if detectar_scanner(ua):
-        return "SCANNER"
-    if status in (403, 404):
-        return "ERROR_ABUSE"
-
-    return "DESCONOCIDO"
 
 
 # ─────────────────────────────────────────────
@@ -328,9 +77,10 @@ def imprimir_top_ips(registros, resultados, n=5):
         if req["status"] in (403, 404):
             errores_por_ip[req["ip"]] += 1
 
-    for req, etiqueta, *_ in resultados:
-        if etiqueta in ("ANOMALO", "SOSPECHOSO"):
-            anomalos_por_ip[req["ip"]] += 1
+    # evento es un dict que ya contiene todo (ip, etiqueta, etc.)
+    for evento in resultados:
+        if evento["etiqueta"] in ("ANOMALO", "SOSPECHOSO"):
+            anomalos_por_ip[evento["ip"]] += 1
 
     def ranking(d, titulo, color_val):
         items = sorted(d.items(), key=lambda x: x[1], reverse=True)[:n]
@@ -357,7 +107,7 @@ def imprimir_top_ips(registros, resultados, n=5):
 # ─────────────────────────────────────────────
 # MOTOR DE ANÁLISIS PRINCIPAL
 # ─────────────────────────────────────────────
-def analizar_request(req, contexto_ip):
+def analizar_request(req):
     """
     Retorna (etiqueta, razones[]) donde etiqueta es:
       IGNORAR    — ruido interno, no mostrar
@@ -375,25 +125,23 @@ def analizar_request(req, contexto_ip):
     if req["url"] == "/favicon.ico":
         return "IGNORAR", ["favicon.ico — automático del browser"]
 
-    # 200 con ruta legítima = normal directo
+    # ── NORMAL ─────────────────────────────────────────
     if req["status"] == 200 and es_ruta_legitima(req["url"]):
-        return "NORMAL", ["200 en ruta conocida del SIU Guaraní"]
+        return "NORMAL", ["200 - Ruta legítima"]
 
-    # SSO/SAML redirects normales
     if es_flujo_sso(req):
         return "NORMAL", ["302 parte del flujo SSO/SAML normal"]
 
-    # 304 Not Modified = caché, normal
     if req["status"] == 304:
         return "NORMAL", ["304 Not Modified — caché del browser"]
 
     # ── ANÁLISIS DE AMENAZAS (mayor prioridad primero) ──
     if detectar_inyeccion(req["url"]):
-        razones.append("⚠️  Patrón de inyección detectado en URL (SQLi/XSS/RCE)")
+        razones.append("⚠️  Patrón de inyección detectado en URL")
         return "ANOMALO", razones
 
     if detectar_path_traversal(req["url"]):
-        razones.append("⚠️  Path traversal detectado (../ o equivalente)")
+        razones.append("⚠️  Path traversal detectado")
         return "ANOMALO", razones
 
     if detectar_scanner(req["ua"]):
@@ -402,17 +150,14 @@ def analizar_request(req, contexto_ip):
         )
         return "ANOMALO", razones
 
-    # ── ANÁLISIS DE STATUS ───────────────────────────────
+    # ── STATUS ───────────────────────────────
     if req["status"] == 403:
-        # 403 desde servicio interno conocido son normales (ej: integración SPA)
-        if es_red_interna(req["ip"]) and req["usuario"] != "-":
-            razones.append(
-                f"403 desde servicio interno (IP: {req['ip']}, usuario: {req['usuario']})"
-            )
+        if es_red_interna(req["ip"]):
+            razones.append("403 interno")
             return "OBSERVAR", razones
-        else:
-            razones.append(f"403 Forbidden desde IP externa: {req['ip']}")
-            return "SOSPECHOSO", razones
+
+        razones.append("403 externo")
+        return "SOSPECHOSO", razones
 
     if req["status"] == 404:
         if es_version_vieja(req["url"]):
@@ -436,25 +181,12 @@ def analizar_request(req, contexto_ip):
         razones.append(f"Error de servidor {req['status']} — posible bug o ataque")
         return "SOSPECHOSO", razones
 
-    # ── CHECKS ADICIONALES ───────────────────────────────
+    # ── UA ───────────────────────────────
     if not es_ua_conocido(req["ua"]) and req["ua"] != "-":
         razones.append(f"User-Agent desconocido: {req['ua'][:80]}")
         return "SOSPECHOSO", razones
 
-    if longitud_url_sospechosa(req["url"]):
-        razones.append(
-            f"URL inusualmente larga ({len(req['url'])} chars) sin parámetros conocidos"
-        )
-        return "SOSPECHOSO", razones
-
-    # 200 en ruta no catalogada
-    if req["status"] == 200:
-        razones.append(f"200 en ruta no catalogada: {req['url'][:80]}")
-        return "OBSERVAR", razones
-
-    # Resto
-    razones.append(f"Status {req['status']} en {req['url'][:60]}")
-    return "OBSERVAR", razones
+    return "OBSERVAR", ["Actividad no catalogada"]
 
 
 # ─────────────────────────────────────────────
@@ -517,8 +249,6 @@ def imprimir_header():
 
 def imprimir_resultado(req, etiqueta, razones, num, score=0, tipo_ataque=None):
     color, icono = ETIQUETA_CONFIG.get(etiqueta, (C.WHITE, "?"))
-
-    fecha_corta = req["fecha"].split(":")[0][1:]  # "19/Apr/2026"
     hora = ":".join(req["fecha"].split(":")[1:3])  # "08:01"
 
     linea_req = f"{req['metodo']} {req['url'][:55]}"
@@ -582,75 +312,46 @@ def imprimir_resumen(stats, alertas_ip, registros=None, resultados=None):
 
 
 # ─────────────────────────────────────────────
-# EXPORTAR A CSV
-# ─────────────────────────────────────────────
-def exportar_csv(resultados, path):
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=[
-                "fecha",
-                "ip",
-                "usuario",
-                "metodo",
-                "url",
-                "status",
-                "bytes",
-                "ua",
-                "etiqueta",
-                "tipo_ataque",
-                "score",
-                "razones",
-            ],
-        )
-        writer.writeheader()
-        for req, etiqueta, razones, score, tipo_ataque in resultados:
-            writer.writerow(
-                {
-                    "fecha": req["fecha"],
-                    "ip": req["ip"],
-                    "usuario": req["usuario"],
-                    "metodo": req["metodo"],
-                    "url": req["url"],
-                    "status": req["status"],
-                    "bytes": req["bytes"],
-                    "ua": req["ua"],
-                    "etiqueta": etiqueta,
-                    "tipo_ataque": tipo_ataque or "",
-                    "score": score,
-                    "razones": " | ".join(razones),
-                }
-            )
-    print(colorear(f"  ✓ Reporte exportado a: {path}", C.GREEN))
-
-
-# ─────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(
-        description="LogGuard Guaraní — Analiza logs Apache del SIU Guaraní UNRN"
+        description="LogGuard Guaraní — Analizador defensivo de logs Apache SIU Guaraní"
     )
+
     parser.add_argument("archivo", help="Archivo de log Apache a analizar")
+
     parser.add_argument(
         "--solo-anomalos",
         action="store_true",
         help="Mostrar sólo SOSPECHOSO y ANOMALO (omite NORMAL y OBSERVAR)",
     )
+
     parser.add_argument(
-        "--exportar", metavar="ARCHIVO.CSV", help="Exportar todos los resultados a CSV"
+        "--exportar-json",
+        metavar="ARCHIVO.JSONL",
+        help="Exporta eventos enriquecidos en formato JSON Lines",
     )
+
+    parser.add_argument(
+        "--razonar",
+        action="store_true",
+        help="Ejecuta clasificación SVM sobre eventos SOSPECHOSO y ANOMALO",
+    )
+
     args = parser.parse_args()
 
     # ── Leer y parsear ──────────────────────────────────
     try:
         with open(args.archivo, encoding="utf-8", errors="replace") as f:
             lineas = f.readlines()
+
     except FileNotFoundError:
         print(colorear(f"  ✖ Archivo no encontrado: {args.archivo}", C.RED))
         sys.exit(1)
 
     registros = []
+
     for i, linea in enumerate(lineas, 1):
         r = parsear_linea(linea)
         if r:
@@ -667,35 +368,73 @@ def main():
 
     # ── Analizar cada request ────────────────────────────
     stats = defaultdict(int)
-    resultados = []
+    eventos = []
 
     for req in registros:
-        etiqueta, razones = analizar_request(req, contexto_ip=None)
-        score = calcular_score(req["url"], req["ua"], req["status"], razones)
+        etiqueta, razones = analizar_request(req)
+        score = calcular_score(req["url"], req["ua"], req["status"])
         tipo_ataque = clasificar_tipo_ataque(
-            req["url"], req["ua"], req["status"], etiqueta, razones
+            req["url"], req["ua"], req["status"], etiqueta
         )
-        stats[etiqueta] += 1
-        resultados.append((req, etiqueta, razones, score, tipo_ataque))
 
-        if etiqueta == "IGNORAR":
-            continue
-        if args.solo_anomalos and etiqueta in ["NORMAL", "OBSERVAR"]:
+        evento = {
+            "ip": req["ip"],
+            "usuario": req["usuario"],
+            "fecha": req["fecha"],
+            "metodo": req["metodo"],
+            "url": req["url"],
+            "status": req["status"],
+            "bytes": req["bytes"],
+            "ua": req["ua"],
+            "etiqueta": etiqueta,
+            "tipo_ataque": tipo_ataque,
+            "score": score,
+            "razones": razones,
+        }
+
+        # ── ML ───────────────────────────────
+        if args.razonar and etiqueta in ("SOSPECHOSO", "ANOMALO"):
+            resultado_ml = clasificar_evento(evento)
+
+            evento["ml_prediction"] = resultado_ml["prediction"]
+            evento["ml_confidence"] = resultado_ml["confidence"]
+
+        eventos.append(evento)
+
+        stats[etiqueta] += 1
+
+        # ── FILTRO CONSOLA ───────────────────
+        if args.solo_anomalos and etiqueta not in ("SOSPECHOSO", "ANOMALO"):
             continue
 
         imprimir_resultado(
             req, etiqueta, razones, 0, score=score, tipo_ataque=tipo_ataque
         )
 
+        # ── OUTPUT ML ────────────────────────
+        if "ml_prediction" in evento:
+            print(
+                f"   → ML prediction: "
+                f"{evento['ml_prediction']} "
+                f"(confianza={evento['ml_confidence']})"
+            )
+
+    # ─────────────────────────────────────────
+    # EXPORTAR
+    # ─────────────────────────────────────────
+    if args.exportar_json:
+        exportar_jsonl(
+            eventos,
+            args.exportar_json,
+        )
+
+        print()
+        print(f"Eventos exportados a: {args.exportar_json}")
+
     # ── Patrones por IP ──────────────────────────────────
     alertas_ip = analizar_patrones_ip(registros)
-
     # ── Resumen ──────────────────────────────────────────
-    imprimir_resumen(stats, alertas_ip, registros=registros, resultados=resultados)
-
-    # ── Exportar CSV ─────────────────────────────────────
-    if args.exportar:
-        exportar_csv(resultados, args.exportar)
+    imprimir_resumen(stats, alertas_ip, registros=registros, resultados=eventos)
 
 
 if __name__ == "__main__":
