@@ -41,8 +41,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar source
 # ─────────────────────────────────────────────
 COPY src/ src/
-COPY core/ core/
-COPY ml/ ml/
 
 # Ownership correcta
 RUN chown -R logguard:logguard /app
@@ -54,4 +52,4 @@ USER logguard
 VOLUME ["/data"]
 
 # Entrypoint principal
-ENTRYPOINT ["python3", "/app/src/logguard_guarani.py"]
+ENTRYPOINT ["python3", "-m", "src.logguard_guarani"]

@@ -33,7 +33,6 @@ def extraer_features(evento):
             float(evento.get("bytes", 0)),
             float(len(evento.get("url", ""))),
             float(METODO_COD.get(evento.get("metodo"), 0)),
-            float(TIPO_ATAQUE_COD.get(evento.get("tipo_ataque"), 0)),
         ],
         dtype=np.float32,
     )
@@ -45,5 +44,4 @@ FEATURE_NAMES = [
     "bytes",
     "url_length",
     "metodo_cod",
-    "tipo_ataque_cod",
 ]

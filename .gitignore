@@ -17,15 +17,13 @@ reports/
 *.jsonl
 
 # ─────────────────────────────────────────────
-# Datasets generados
-# ─────────────────────────────────────────────
-datasets/*.csv
-
-# ─────────────────────────────────────────────
 # ML / modelos futuros
 # ─────────────────────────────────────────────
-ml/models/*.joblib
-ml/models/*.pkl
+datasets/*.csv
+src/ml/models/*.joblib
+src/ml/models/*.pkl
+src/ml/models/*
+!src/ml/models/.gitkeep
 
 # ─────────────────────────────────────────────
 # Python

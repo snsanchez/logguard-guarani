@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import joblib
 import pandas as pd
 from sklearn.metrics import classification_report
@@ -5,8 +7,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
+BASE_DIR = Path(__file__).parent
+
 # Cargar el dataset generado previamente
-df = pd.read_csv("ml/datasets/web_attacks.csv")
+df = pd.read_csv("datasets/dataset.csv")
 
 # ─────────────────────────────────────────────
 # PREPARACIÓN DE LOS DATOS
@@ -45,7 +49,8 @@ pred = modelo.predict(X_test)
 print(classification_report(y_test, pred))
 
 # Guardar el modelo entrenado
-joblib.dump(modelo, "ml/models/svm_model.pkl")
-joblib.dump(scaler, "ml/models/scaler.pkl")
+
+joblib.dump(modelo, BASE_DIR / "models" / "svm_model.pkl")
+joblib.dump(scaler, BASE_DIR / "models" / "scaler.pkl")
 
 print("Modelo entrenado.")
