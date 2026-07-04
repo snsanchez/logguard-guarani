@@ -1,0 +1,14 @@
+{
+  "SQL_INJECTION": {
+    "technique": "T1190",
+    "name": "Exploit Public-Facing Application"
+  },
+  "PATH_TRAVERSAL": {
+    "technique": "T1190",
+    "name": "Exploit Public-Facing Application"
+  },
+  "SCANNER": {
+    "technique": "T1595",
+    "name": "Active Scanning"
+  }
+}

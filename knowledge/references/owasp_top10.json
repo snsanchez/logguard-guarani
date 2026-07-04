@@ -1,0 +1,6 @@
+{
+  "SQL_INJECTION": "A03:2021 Injection",
+  "PATH_TRAVERSAL": "A01:2021 Broken Access Control",
+  "SCANNER": "Reconnaissance",
+  "DIRECTORY_ENUMERATION": "Security Misconfiguration"
+}

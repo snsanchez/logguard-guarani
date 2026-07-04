@@ -1,0 +1,18 @@
+{
+  "LOW": {
+    "priority": 4,
+    "description": "Informational event"
+  },
+  "MEDIUM": {
+    "priority": 3,
+    "description": "Requires investigation"
+  },
+  "HIGH": {
+    "priority": 2,
+    "description": "Potential compromise"
+  },
+  "CRITICAL": {
+    "priority": 1,
+    "description": "Immediate response recommended"
+  }
+}
