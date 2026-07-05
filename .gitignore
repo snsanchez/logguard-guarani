@@ -58,3 +58,12 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+
+# Dynamic knowledge cache
+knowledge/cves/cve_cache.json
+knowledge/cves/kev.json
+knowledge/mitre/attack_mappings.json
+
+# Future agent cache
+knowledge/cache/
