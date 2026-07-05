@@ -26,6 +26,7 @@ from core.heuristics import (
     es_version_vieja,
     longitud_url_sospechosa,
 )
+from core.knowledge import update_knowledge
 from core.parser import parsear_linea
 from core.scoring import calcular_score
 from ml.infer import clasificar_evento
@@ -339,7 +340,24 @@ def main():
         help="Ejecuta clasificación SVM sobre eventos SOSPECHOSO y ANOMALO",
     )
 
+    parser.add_argument(
+        "--actualizar-conocimiento",
+        action="store_true",
+        help="Verifica y actualiza la base de conocimiento local",
+    )
+
+    parser.add_argument(
+        "--online",
+        action="store_true",
+        help="Fuerza sincronizacion consultando fuentes externa requiriendo wifi (CVE/MITRE/KEV)",
+    )
+
     args = parser.parse_args()
+
+    if args.actualizar_conocimiento:
+        from core.knowledge import update_knowledge
+
+        exit(update_knowledge(force_online=args.online))
 
     # ── Leer y parsear ──────────────────────────────────
     try:
