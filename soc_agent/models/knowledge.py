@@ -157,9 +157,6 @@ class KnowledgeContext:
         return len(self.cves)
 
     def summary(self) -> dict:
-        """
-        Returns a compact summary used by the Report Builder.
-        """
         return {
             "mitre_count": self.mitre_count,
             "cve_count": self.cve_count,

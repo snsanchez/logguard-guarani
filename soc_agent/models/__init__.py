@@ -1,3 +1,4 @@
+from .agent_analysis import AgentAnalysis
 from .analysis import (
     AnalysisContext,
     EnrichedEvent,
@@ -30,6 +31,7 @@ from .stage import (
 
 __all__ = [
     # Analysis
+    "AgentAnalysis",
     "AnalysisContext",
     "EnrichedEvent",
     # Evidence

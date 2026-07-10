@@ -8,10 +8,10 @@ It only interprets the evidence already produced.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict
 from enum import Enum
 
-from soc_agent.models.base import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 # ============================================================================
 # Event Evidence
@@ -31,7 +31,6 @@ class MLPrediction(Enum):
     MALICIOUS = "malicious"
 
 
-@dataclass(slots=True)
 class EventEvidence(BaseModel):
     """
     This information comes from:
@@ -42,21 +41,21 @@ class EventEvidence(BaseModel):
 
     heuristics: list[str]
 
-    score: float
+    score: float = Field(ge=0.0, le=100.0)
 
     risk_level: RiskLevel
 
     ml_prediction: MLPrediction
 
-    ml_confidence: float
+    ml_confidence: float = Field(ge=0.0, le=1.0)
 
-    def __post_init__(self) -> None:
+    @model_validator(mode="after")
+    def validate_evidence(self):
 
-        if not 0.0 <= self.score <= 100.0:
-            raise ValueError("Risk score must be between 0 and 100.")
+        if self.score >= 75 and self.risk_level != RiskLevel.HIGH:
+            raise ValueError("High score requires HIGH risk level.")
 
-        if not 0.0 <= self.ml_confidence <= 1.0:
-            raise ValueError("ML confidence must be between 0 and 1.")
+        return self
 
     @property
     def is_high_risk(self) -> bool:
@@ -75,18 +74,14 @@ class EventEvidence(BaseModel):
         return len(self.heuristics)
 
 
-@dataclass(slots=True)
 class EvidenceItem(BaseModel):
-    """
-    Single piece of evidence shown in the SOC report.
+    title: str = Field(description="Short title identifying the evidence.")
 
-    Unlike EventEvidence, this object is human-oriented.
-    """
+    description: str = Field(description="Detailed explanation of the evidence.")
 
-    title: str
+    source: str = Field(description="Origin of the evidence.")
 
-    description: str
+    severity: RiskLevel = Field(description="Severity associated with the evidence.")
 
-    source: str
-
-    severity: RiskLevel
+    def to_dict(self):
+        return asdict(self)

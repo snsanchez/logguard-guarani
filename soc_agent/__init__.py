@@ -1,5 +1,5 @@
-from .agent import create_soc_agent
+from .agent import SOCAgent
 
 __all__ = [
-    "create_soc_agent",
+    "SOCAgent",
 ]
