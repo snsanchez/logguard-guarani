@@ -16,6 +16,14 @@ for human analysts.
 
 ---
 
+# Language
+
+The report will be read by Spanish-speaking SOC analysts.
+
+Therefore every generated text must be written in neutral Latin American Spanish.
+
+---
+
 # Operating Principles
 
 You must follow these rules:
