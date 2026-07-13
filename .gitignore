@@ -1,8 +1,6 @@
 utils.md
 tests/
 
-
-
 # ─────────────────────────────────────────────
 # Logs reales y datasets
 # ─────────────────────────────────────────────
@@ -16,7 +14,8 @@ data/
 # Outputs generados
 # ─────────────────────────────────────────────
 outputs/
-reports/
+soc_agent/reports/*.md
+soc_agent/reports/*.json
 *.csv
 *.jsonl
 

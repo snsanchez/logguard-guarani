@@ -9,10 +9,14 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
+from soc_agent.builders import report_builder
+
 from .builders import ReportBuilder
 from .models.agent_analysis import AgentAnalysis
 from .models.analysis import AnalysisContext
 from .prompt_builder import ContextSerializer
+from .recommendation_engine import RecommendationEngine
+from .reports.writer import ReportWriter
 from .tools import event_reader, knowledge_lookup
 
 MODEL_NAME = os.getenv(
@@ -44,6 +48,10 @@ class SOCAgent:
             session_service=self._session_service,
         )
 
+        self._recommendations = RecommendationEngine()
+
+        self._writer = ReportWriter()
+
     @staticmethod
     def _load_system_prompt() -> str:
 
@@ -69,15 +77,21 @@ class SOCAgent:
         self,
         context: AnalysisContext,
     ):
+        for recommendation in self._recommendations.generate(context):
+            context.add_recommendation(recommendation)
 
         prompt = self.build_prompt(context)
 
         analysis = await self._run_llm(prompt)
 
-        return self._builder.build(
+        report = self._builder.build(
             context=context,
             analysis=analysis,
         )
+
+        self._writer.save_markdown(report)
+
+        return report
 
     async def _run_llm(
         self,
