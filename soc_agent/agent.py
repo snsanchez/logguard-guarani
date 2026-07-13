@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import uuid
 from pathlib import Path
 
@@ -14,11 +15,16 @@ from .models.analysis import AnalysisContext
 from .prompt_builder import ContextSerializer
 from .tools import event_reader, knowledge_lookup
 
+MODEL_NAME = os.getenv(
+    "GEMINI_MODEL",
+    "gemini-2.5-flash-lite",
+)
+
 
 class SOCAgent:
     def __init__(
         self,
-        model: str = "gemini-2.5-flash",
+        model: str = MODEL_NAME,
     ) -> None:
 
         self._builder = ReportBuilder()
@@ -101,7 +107,16 @@ class SOCAgent:
                 if event.content is None or not event.content.parts:
                     raise RuntimeError("SOC Agent final response had no content")
                 output = event.content.parts[0].text
+
                 if output is None:
                     raise RuntimeError("SOC Agent final response had no text")
+
+                output = output.strip()
+                if output.startswith("```"):
+                    output = output.removeprefix("```json")
+                    output = output.removeprefix("```")
+                    output = output.removesuffix("```")
+                    output = output.strip()
+
                 return AgentAnalysis.model_validate_json(output)
         raise RuntimeError("SOC Agent did not produce a final response")
