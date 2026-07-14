@@ -17,7 +17,6 @@ def build_event(
     *,
     timestamp: str,
     source_ip: str,
-    destination: str,
     method: str,
     path: str,
     status_code: int,
@@ -33,7 +32,6 @@ def build_event(
     return EnrichedEvent(
         timestamp=timestamp,
         source_ip=source_ip,
-        destination=destination,
         method=method,
         path=path,
         status_code=status_code,

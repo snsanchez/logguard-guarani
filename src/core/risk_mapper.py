@@ -50,7 +50,6 @@ def build_enriched_event(
         path=event.url,
         status_code=event.status,
         user_agent=event.ua,
-        destination=event.server,
         evidence=EventEvidence(
             heuristics=event.razones,
             score=event.score,

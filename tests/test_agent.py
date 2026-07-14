@@ -46,7 +46,6 @@ async def main():
     event = EnrichedEvent(
         timestamp="2026-07-10T18:00:00Z",
         source_ip="192.168.1.25",
-        destination="guarani.unrn.edu.ar",
         method="GET",
         path="/guarani3/rest/login",
         status_code=200,

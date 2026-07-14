@@ -35,8 +35,6 @@ class EnrichedEvent(BaseModel):
 
     source_ip: str
 
-    destination: str
-
     method: str
 
     path: str
@@ -53,7 +51,6 @@ class EnrichedEvent(BaseModel):
         return {
             "timestamp": self.timestamp,
             "source_ip": self.source_ip,
-            "destination": self.destination,
             "method": self.method,
             "path": self.path,
             "status_code": self.status_code,
