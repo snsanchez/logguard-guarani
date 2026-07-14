@@ -38,10 +38,6 @@ from core.knowledge_sources.paths import (
     REQUIRED_SUBDIRS,
 )
 
-# ---------------------------------------------------------------------------
-# Colors (plain ANSI, no external dependency)
-# ---------------------------------------------------------------------------
-
 
 class Colors:
     OK = "\033[92m"
@@ -58,11 +54,6 @@ _STATUS_COLOR = {
     Status.WARN: Colors.WARN,
     Status.FAIL: Colors.FAIL,
 }
-
-
-# ---------------------------------------------------------------------------
-# Stage 1: Local verification (read-only, includes playbooks/references)
-# ---------------------------------------------------------------------------
 
 
 def check_knowledge_directory() -> Result:
@@ -153,13 +144,6 @@ def verify_knowledge_base() -> List[Result]:
     return [check() for check in CHECK_PIPELINE]
 
 
-# ---------------------------------------------------------------------------
-# Stage 2-3: Synchronization + validation of DYNAMIC sources only.
-#
-# Extension point: add new KnowledgeUpdater instances here. Nothing
-# else in this file needs to change.
-# ---------------------------------------------------------------------------
-
 UPDATER_PIPELINE = [
     CVEUpdater(),
     MitreAttackUpdater(),
@@ -172,11 +156,6 @@ def synchronize_sources() -> List[Result]:
     A failure in one updater does not stop the others (see
     KnowledgeUpdater.run() in knowledge_sources/base.py)."""
     return [updater.run() for updater in UPDATER_PIPELINE]
-
-
-# ---------------------------------------------------------------------------
-# Stage 4: metadata.json update
-# ---------------------------------------------------------------------------
 
 
 def update_metadata(sync_results: List[Result]) -> Result:
@@ -218,11 +197,6 @@ def update_metadata(sync_results: List[Result]) -> Result:
     )
 
 
-# ---------------------------------------------------------------------------
-# Stage 5: Reporting
-# ---------------------------------------------------------------------------
-
-
 def _print_section(title: str, results: List[Result]) -> None:
     print(f"{Colors.BOLD}{title}{Colors.RESET}")
     for result in results:
@@ -250,26 +224,7 @@ def print_full_report(
     )
 
 
-# ---------------------------------------------------------------------------
-# Public entry point (the only thing the CLI should call)
-# ---------------------------------------------------------------------------
-
-
 def update_knowledge(force_online: bool = False) -> int:
-    """
-    Runs the full knowledge-base update pipeline:
-        1. Verify local structure (including static playbooks/references,
-           read-only).
-        2-3. Synchronize and validate dynamic sources (CVE cache, MITRE
-           ATT&CK, CISA KEV). Playbooks are never touched here.
-        4. Update metadata.json with the outcome of the sync.
-        5. Print a detailed, colored report.
-
-    Returns:
-        0 if everything succeeded,
-        2 if there were warnings but no failures,
-        1 if at least one stage failed.
-    """
     verification_results = verify_knowledge_base()
     sync_results = []
     if force_online:

@@ -24,10 +24,10 @@ class RecommendationEngine:
         if "SQL Injection Pattern" in heuristics:
             recommendations.append(
                 Recommendation(
-                    title="Review SQL Injection Protection",
+                    title="Revisar protección contra inyección SQL",
                     description=(
-                        "Review input validation and parameterized queries "
-                        "for the affected application."
+                        "Revisar la validación de entradas y el uso de consultas "
+                        "parametrizadas en la aplicación afectada."
                     ),
                     priority=RecommendationPriority.CRITICAL,
                     category=RecommendationCategory.HARDENING,
@@ -35,13 +35,13 @@ class RecommendationEngine:
                 )
             )
 
-        if "Suspicious User-Agent" in heuristics:
+        if "User-Agent Sospechoso" in heuristics:
             recommendations.append(
                 Recommendation(
-                    title="Investigate Source IP",
+                    title="Investigar dirección IP",
                     description=(
-                        "Correlate the source IP with previous events and "
-                        "consider temporary blocking if malicious."
+                        "Correlacionar la IP de origen con eventos anteriores y "
+                        "considere el bloqueo temporal si es malicioso."
                     ),
                     priority=RecommendationPriority.HIGH,
                     category=RecommendationCategory.MONITORING,
@@ -51,10 +51,10 @@ class RecommendationEngine:
         if knowledge.has_cves:
             recommendations.append(
                 Recommendation(
-                    title="Apply Security Updates",
+                    title="Aplicar actualizaciones de seguridad",
                     description=(
-                        "Update vulnerable software versions associated "
-                        "with detected CVEs."
+                        "Actualizar versiones de software vulnerables asociadas "
+                        "con CVE detectados."
                     ),
                     priority=RecommendationPriority.HIGH,
                     category=RecommendationCategory.PATCHING,
@@ -64,10 +64,10 @@ class RecommendationEngine:
         if knowledge.has_kev:
             recommendations.append(
                 Recommendation(
-                    title="Prioritize KEV Remediation",
+                    title="Priorizar la remediación de KEV",
                     description=(
-                        "CISA lists this vulnerability as actively exploited. "
-                        "Prioritize remediation."
+                        "CISA enumera esta vulnerabilidad como explotada activamente "
+                        "priorizar la remediación."
                     ),
                     priority=RecommendationPriority.CRITICAL,
                     category=RecommendationCategory.PATCHING,
@@ -77,9 +77,9 @@ class RecommendationEngine:
         if event.is_high_risk:
             recommendations.append(
                 Recommendation(
-                    title="Preserve Evidence",
+                    title="Preservar evidencia",
                     description=(
-                        "Preserve relevant logs for future forensic analysis."
+                        "Conserve logs relevantes para futuros análisis forenses."
                     ),
                     priority=RecommendationPriority.HIGH,
                     category=RecommendationCategory.FORENSICS,

@@ -1,14 +1,5 @@
-#!/usr/bin/env python3
-"""
-LogGuard Guaraní — Analizador de logs Apache para SIU Guaraní (UNRN)
-Analiza los request a la API del SIU para detectar anomalias.
-
-Uso:
-    python3 logguard_guarani.py access.log
-    python3 logguard_guarani.py access.log --solo-anomalos --exportar reporte.csv
-"""
-
 import argparse
+import asyncio
 import sys
 from collections import defaultdict
 
@@ -27,14 +18,17 @@ from core.heuristics import (
     longitud_url_sospechosa,
 )
 from core.knowledge import update_knowledge
+from core.knowledge_enricher import KnowledgeEnricher, enrich_event
 from core.parser import parsear_linea
+from core.risk_mapper import build_enriched_event
 from core.scoring import calcular_score
 from ml.infer import clasificar_evento
+from soc_agent.agent import SOCAgent
+from soc_agent.factory import build_event
+from soc_agent.models import AnalysisContext
+from src.core.soc_orchestrator import SOCOrchestrator
 
 
-# ─────────────────────────────────────────────
-# COLORES PARA CONSOLA
-# ─────────────────────────────────────────────
 class C:
     RESET = "\033[0m"
     BOLD = "\033[1m"
@@ -51,10 +45,6 @@ def colorear(texto, color):
     return f"{color}{texto}{C.RESET}"
 
 
-# ─────────────────────────────────────────────
-# CLASIFICACIÓN DE TIPO DE ATAQUE
-# ─────────────────────────────────────────────
-
 TIPOS_ATAQUE = [
     "INJECTION",
     "PATH_TRAVERSAL",
@@ -64,9 +54,6 @@ TIPOS_ATAQUE = [
 ]
 
 
-# ─────────────────────────────────────────────
-# TOP IPs — se llama desde imprimir_resumen()
-# ─────────────────────────────────────────────
 def imprimir_top_ips(registros, resultados, n=5):
 
     total_por_ip = defaultdict(int)
@@ -105,9 +92,6 @@ def imprimir_top_ips(registros, resultados, n=5):
     ranking(errores_por_ip, "Por errores HTTP (403 + 404):", C.YELLOW)
 
 
-# ─────────────────────────────────────────────
-# MOTOR DE ANÁLISIS PRINCIPAL
-# ─────────────────────────────────────────────
 def analizar_request(req):
     """
     Retorna (etiqueta, razones[]) donde etiqueta es:
@@ -190,9 +174,6 @@ def analizar_request(req):
     return "OBSERVAR", ["Actividad no catalogada"]
 
 
-# ─────────────────────────────────────────────
-# DETECCIÓN DE PATRONES POR IP (post-proceso)
-# ─────────────────────────────────────────────
 def analizar_patrones_ip(registros):
     """
     Detecta comportamiento anómalo a nivel de IP:
@@ -224,9 +205,6 @@ def analizar_patrones_ip(registros):
     return alertas_ip
 
 
-# ─────────────────────────────────────────────
-# FORMATO DE SALIDA EN CONSOLA
-# ─────────────────────────────────────────────
 ETIQUETA_CONFIG = {
     "IGNORAR": (C.GREY, "·"),
     "NORMAL": (C.GREEN, "✓"),
@@ -312,9 +290,6 @@ def imprimir_resumen(stats, alertas_ip, registros=None, resultados=None):
     print()
 
 
-# ─────────────────────────────────────────────
-# MAIN
-# ─────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(
         description="LogGuard Guaraní — Analizador defensivo de logs Apache SIU Guaraní"
@@ -329,9 +304,9 @@ def main():
     )
 
     parser.add_argument(
-        "--exportar-json",
+        "--exportar",
         metavar="ARCHIVO.JSONL",
-        help="Exporta eventos enriquecidos en formato JSON Lines",
+        help="Exportar eventos enriquecidos a archivo JSONL",
     )
 
     parser.add_argument(
@@ -416,6 +391,11 @@ def main():
 
             evento["ml_prediction"] = resultado_ml["prediction"]
             evento["ml_confidence"] = resultado_ml["confidence"]
+        # --------------------------
+        # Construcción del EnrichedEvent
+        enriched = build_enriched_event(evento)
+
+        enriched = enrich_event(enriched)
 
         eventos.append(evento)
 
@@ -429,6 +409,18 @@ def main():
             req, etiqueta, razones, 0, score=score, tipo_ataque=tipo_ataque
         )
 
+        # ---------------------------------------------------------
+        # Sólo los eventos realmente peligrosos pasan al SOC Agent
+
+        if etiqueta == "ANOMALO":
+            context = AnalysisContext(
+                event=enriched,
+            )
+            report = asyncio.run(SOCAgent().analyze(context))
+            print()
+            print("Reporte SOC generado:")
+            print(report.title)
+
         # ── OUTPUT ML ────────────────────────
         if "ml_prediction" in evento:
             print(
@@ -439,13 +431,11 @@ def main():
 
     # ─────────────────────────────────────────
     # EXPORTAR
-    # ─────────────────────────────────────────
     if args.exportar_json:
         exportar_jsonl(
             eventos,
             args.exportar_json,
         )
-
         print()
         print(f"Eventos exportados a: {args.exportar_json}")
 
