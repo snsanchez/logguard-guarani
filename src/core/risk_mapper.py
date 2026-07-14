@@ -1,22 +1,62 @@
-from soc_agent.models import RiskLevel
+from __future__ import annotations
+
+from core.events import AnalysisEvent
+from soc_agent.models import (
+    EnrichedEvent,
+    EventEvidence,
+    KnowledgeContext,
+    MLPrediction,
+    RiskLevel,
+)
 
 
-def map_risk(
-    etiqueta: str,
-) -> RiskLevel:
+def _risk_level(score: float) -> RiskLevel:
 
-    match etiqueta:
-        case "NORMAL":
-            return RiskLevel.LOW
+    if score >= 90:
+        return RiskLevel.CRITICAL
 
-        case "OBSERVAR":
-            return RiskLevel.MEDIUM
+    if score >= 70:
+        return RiskLevel.HIGH
 
-        case "SOSPECHOSO":
-            return RiskLevel.HIGH
+    if score >= 40:
+        return RiskLevel.MEDIUM
 
-        case "ANOMALO":
-            return RiskLevel.CRITICAL
+    return RiskLevel.LOW
 
-        case _:
-            return RiskLevel.LOW
+
+def _ml_prediction(prediction: str | None) -> MLPrediction:
+
+    if prediction is None:
+        return MLPrediction.UNKNOWN
+
+    mapping = {
+        "NORMAL": MLPrediction.NORMAL,
+        "OBSERVAR": MLPrediction.OBSERVE,
+        "SOSPECHOSO": MLPrediction.SUSPICIOUS,
+        "ANOMALO": MLPrediction.ANOMALOUS,
+    }
+
+    return mapping.get(prediction.upper(), MLPrediction.UNKNOWN)
+
+
+def build_enriched_event(
+    event: AnalysisEvent,
+) -> EnrichedEvent:
+
+    return EnrichedEvent(
+        timestamp=event.fecha,
+        source_ip=event.ip,
+        method=event.metodo,
+        path=event.url,
+        status_code=event.status,
+        user_agent=event.ua,
+        destination=event.server,
+        evidence=EventEvidence(
+            heuristics=event.razones,
+            score=event.score,
+            risk_level=_risk_level(event.score),
+            ml_prediction=_ml_prediction(event.ml_prediction),
+            ml_confidence=event.ml_confidence,
+        ),
+        knowledge=KnowledgeContext(),
+    )

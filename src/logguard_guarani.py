@@ -4,6 +4,7 @@ import sys
 from collections import defaultdict
 
 from core.attack_classifier import clasificar_tipo_ataque
+from core.events import AnalysisEvent
 from core.exporter import exportar_jsonl
 from core.heuristics import (
     detectar_inyeccion,
@@ -391,12 +392,17 @@ def main():
 
             evento["ml_prediction"] = resultado_ml["prediction"]
             evento["ml_confidence"] = resultado_ml["confidence"]
+
+        analysis_event = AnalysisEvent(**evento)
+
         # --------------------------
         # Construcción del EnrichedEvent
-        enriched = build_enriched_event(evento)
+        enriched = build_enriched_event(analysis_event)
 
         enriched = enrich_event(enriched)
 
+        
+        
         eventos.append(evento)
 
         stats[etiqueta] += 1

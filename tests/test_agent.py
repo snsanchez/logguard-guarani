@@ -58,7 +58,7 @@ async def main():
             ],
             score=91.5,
             risk_level=RiskLevel.HIGH,
-            ml_prediction=MLPrediction.MALICIOUS,
+            ml_prediction=MLPrediction.ANOMALOUS,
             ml_confidence=0.97,
         ),
         knowledge=KnowledgeContext(

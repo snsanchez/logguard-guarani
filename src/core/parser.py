@@ -43,7 +43,7 @@ def parsear_linea(linea):
         "fecha": m.group("fecha"),
         "metodo": metodo,
         "url": url,
-        "url_dec": unquote(url),  # URL decodificada para análisis
+        "url_dec": unquote(url),
         "proto": proto,
         "status": int(m.group("status")),
         "bytes": bytes_val,

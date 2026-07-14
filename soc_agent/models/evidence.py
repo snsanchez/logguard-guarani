@@ -9,7 +9,7 @@ It only interprets the evidence already produced.
 from __future__ import annotations
 
 from dataclasses import asdict
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -25,10 +25,12 @@ class RiskLevel(Enum):
     CRITICAL = "CRITICAL"
 
 
-class MLPrediction(Enum):
-    BENIGN = "benign"
-    SUSPICIOUS = "suspicious"
-    MALICIOUS = "malicious"
+class MLPrediction(StrEnum):
+    NORMAL = "NORMAL"
+    OBSERVE = "OBSERVAR"
+    SUSPICIOUS = "SOSPECHOSO"
+    ANOMALOUS = "ANOMALO"
+    UNKNOWN = "UNKNOWN"
 
 
 class EventEvidence(BaseModel):
