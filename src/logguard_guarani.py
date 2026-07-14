@@ -2,6 +2,9 @@ import argparse
 import asyncio
 import sys
 from collections import defaultdict
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # raíz del proyecto
 
 from core.attack_classifier import clasificar_tipo_ataque
 from core.events import AnalysisEvent
@@ -19,7 +22,7 @@ from core.heuristics import (
     longitud_url_sospechosa,
 )
 from core.knowledge import update_knowledge
-from core.knowledge_enricher import KnowledgeEnricher, enrich_event
+from core.knowledge_enricher import enrich_event
 from core.parser import parsear_linea
 from core.risk_mapper import build_enriched_event
 from core.scoring import calcular_score
@@ -27,6 +30,7 @@ from ml.infer import clasificar_evento
 from soc_agent.agent import SOCAgent
 from soc_agent.factory import build_event
 from soc_agent.models import AnalysisContext
+from soc_agent.models.evidence import RiskLevel
 from src.core.soc_orchestrator import SOCOrchestrator
 
 
@@ -305,7 +309,7 @@ def main():
     )
 
     parser.add_argument(
-        "--exportar",
+        "--exportar-json",
         metavar="ARCHIVO.JSONL",
         help="Exportar eventos enriquecidos a archivo JSONL",
     )
@@ -393,16 +397,15 @@ def main():
             evento["ml_prediction"] = resultado_ml["prediction"]
             evento["ml_confidence"] = resultado_ml["confidence"]
 
-        analysis_event = AnalysisEvent(**evento)
-
         # --------------------------
         # Construcción del EnrichedEvent
+
+        analysis_event = AnalysisEvent(**evento)
+
         enriched = build_enriched_event(analysis_event)
 
         enriched = enrich_event(enriched)
 
-        
-        
         eventos.append(evento)
 
         stats[etiqueta] += 1
@@ -418,11 +421,13 @@ def main():
         # ---------------------------------------------------------
         # Sólo los eventos realmente peligrosos pasan al SOC Agent
 
-        if etiqueta == "ANOMALO":
+        if enriched.evidence.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL):
             context = AnalysisContext(
                 event=enriched,
             )
+
             report = asyncio.run(SOCAgent().analyze(context))
+
             print()
             print("Reporte SOC generado:")
             print(report.title)
