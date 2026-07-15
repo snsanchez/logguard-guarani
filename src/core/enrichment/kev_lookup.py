@@ -3,23 +3,46 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from soc_agent.models import KEVEntry
+from soc_agent.models import CVEInfo, KEVEntry
 
-DATABASE = Path("knowledge/cves/kev_lookup.json")
+DATABASE = Path("knowledge") / "cves" / "kev.json"
 
 
-def lookup_kev(cve_ids: list[str]) -> list[KEVEntry]:
+def lookup_kev(cves: list[CVEInfo]) -> list[KEVEntry]:
+
+    if not cves:
+        return []
 
     if not DATABASE.exists():
         return []
 
-    with open(DATABASE, encoding="utf-8") as f:
-        database = json.load(f)
+    try:
+        with open(DATABASE, encoding="utf-8") as f:
+            data = json.load(f)
 
-    results = []
+    except json.JSONDecodeError:
+        return []
 
-    for cve in cve_ids:
-        if cve in database:
-            results.append(KEVEntry(**database[cve]))
+    database = {entry["cve_id"]: entry for entry in data.get("vulnerabilities", [])}
 
-    return results
+    matches = []
+
+    for cve in cves:
+        entry = database.get(cve.cve_id)
+        if entry:
+            matches.append(
+                KEVEntry(
+                    cve_id=entry["cve_id"],
+                    vendor=entry.get("vendor", ""),
+                    product=entry.get("product", ""),
+                    vulnerability_name=entry.get("vulnerability_name", ""),
+                    date_added=entry.get("date_added", ""),
+                    ransomware_use=(
+                        entry.get("ransomware_use") is True
+                        or entry.get("ransomware_use") == "Known"
+                        or entry.get("ransomware_use") == "Yes"
+                    ),
+                )
+            )
+
+    return matches

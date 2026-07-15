@@ -16,7 +16,7 @@ def enrich_event(analysis: AnalysisEvent, event: EnrichedEvent) -> EnrichedEvent
     attack = analysis.tipo_ataque
 
     mitre = lookup_mitre(attack)
-    cves = lookup_cves(attack, analysis.url)
+    cves = lookup_cves(attack)
 
     kev = lookup_kev(cves)
 

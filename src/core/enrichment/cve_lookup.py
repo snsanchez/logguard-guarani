@@ -16,8 +16,11 @@ def lookup_cves(attack_type: str | None) -> list[CVEInfo]:
     if not DATABASE.exists():
         return []
 
-    with open(DATABASE, encoding="utf-8") as f:
-        database = json.load(f)
+    try:
+        with open(DATABASE, encoding="utf-8") as f:
+            database = json.load(f)
+    except json.JSONDecodeError:
+        return []
 
     entries = database.get(attack_type, [])
 
