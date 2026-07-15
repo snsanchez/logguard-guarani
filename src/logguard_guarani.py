@@ -7,6 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # raíz del proyecto
 
 from core.attack_classifier import clasificar_tipo_ataque
+from core.enrichment.knowledge_enricher import enrich_event
+from core.enrichment.risk_mapper import build_enriched_event
 from core.events import AnalysisEvent
 from core.exporter import exportar_jsonl
 from core.heuristics import (
@@ -21,17 +23,12 @@ from core.heuristics import (
     es_version_vieja,
     longitud_url_sospechosa,
 )
-from core.knowledge import update_knowledge
-from core.knowledge_enricher import enrich_event
 from core.parser import parsear_linea
-from core.risk_mapper import build_enriched_event
 from core.scoring import calcular_score
 from ml.infer import clasificar_evento
 from soc_agent.agent import SOCAgent
-from soc_agent.factory import build_event
 from soc_agent.models import AnalysisContext
 from soc_agent.models.evidence import RiskLevel
-from src.core.soc_orchestrator import SOCOrchestrator
 
 
 class C:
@@ -300,7 +297,7 @@ def main():
         description="LogGuard Guaraní — Analizador defensivo de logs Apache SIU Guaraní"
     )
 
-    parser.add_argument("archivo", help="Archivo de log Apache a analizar")
+    parser.add_argument("archivo", nargs="?", help="Archivo de log Apache a analizar")
 
     parser.add_argument(
         "--solo-anomalos",
@@ -339,6 +336,9 @@ def main():
 
         exit(update_knowledge(force_online=args.online))
 
+    if args.archivo is None:
+        parser.error("Debe indicar un archivo de log para analizar")
+
     # ── Leer y parsear ──────────────────────────────────
     try:
         with open(args.archivo, encoding="utf-8", errors="replace") as f:
@@ -370,7 +370,9 @@ def main():
 
     for req in registros:
         etiqueta, razones = analizar_request(req)
+
         score = calcular_score(req["url"], req["ua"], req["status"])
+
         tipo_ataque = clasificar_tipo_ataque(
             req["url"], req["ua"], req["status"], etiqueta
         )
@@ -404,7 +406,7 @@ def main():
 
         enriched = build_enriched_event(analysis_event)
 
-        enriched = enrich_event(enriched)
+        enriched = enrich_event(analysis_event, enriched)
 
         eventos.append(evento)
 
@@ -417,6 +419,14 @@ def main():
         imprimir_resultado(
             req, etiqueta, razones, 0, score=score, tipo_ataque=tipo_ataque
         )
+
+        # ── OUTPUT ML ────────────────────────
+        if "ml_prediction" in evento:
+            print(
+                f"   → ML prediction: "
+                f"{evento['ml_prediction']} "
+                f"(confianza={evento['ml_confidence']})"
+            )
 
         # ---------------------------------------------------------
         # Sólo los eventos realmente peligrosos pasan al SOC Agent
@@ -431,14 +441,6 @@ def main():
             print()
             print("Reporte SOC generado:")
             print(report.title)
-
-        # ── OUTPUT ML ────────────────────────
-        if "ml_prediction" in evento:
-            print(
-                f"   → ML prediction: "
-                f"{evento['ml_prediction']} "
-                f"(confianza={evento['ml_confidence']})"
-            )
 
     # ─────────────────────────────────────────
     # EXPORTAR

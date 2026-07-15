@@ -5,19 +5,30 @@ from pathlib import Path
 
 from soc_agent.models import MitreTechnique
 
-DATABASE = Path("knowledge") / "mitre" / "attack_mapping.json"
+DATABASE = Path("knowledge/mitre/attack_mapping.json")
 
 
-def lookup_mitre(
-    attack_type: str | None,
-) -> list[MitreTechnique]:
+def lookup_mitre(attack_type: str | None) -> list[MitreTechnique]:
 
     if attack_type is None:
         return []
 
+    if not DATABASE.exists():
+        return []
+
     with open(DATABASE, encoding="utf-8") as f:
-        data = json.load(f)
+        database = json.load(f)
 
-    result = data.get(attack_type, [])
+    item = database.get(attack_type)
 
-    return [MitreTechnique(**item) for item in result]
+    if item is None:
+        return []
+
+    return [
+        MitreTechnique(
+            technique_id=item["technique"],
+            name=item["name"],
+            tactic=item.get("tactic", ""),
+            description=item.get("description", ""),
+        )
+    ]

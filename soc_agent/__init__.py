@@ -1,5 +1,1 @@
-from .agent import SOCAgent
-
-__all__ = [
-    "SOCAgent",
-]
+# soc_agent package

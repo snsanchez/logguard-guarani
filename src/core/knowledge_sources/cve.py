@@ -42,40 +42,79 @@ class CVEUpdater(KnowledgeUpdater):
         return isinstance(data, dict) and isinstance(data.get("vulnerabilities"), list)
 
     def save(self, data: Any) -> int:
+
         vulnerabilities = data["vulnerabilities"]
 
-        # Store a trimmed-down representation: only the fields LogGuard
-        # actually uses elsewhere (id, severity, description), to keep
-        # the local cache small and independent of NVD's full schema.
         simplified = []
+
+        lookup = {
+            "INJECTION": [],
+            "PATH_TRAVERSAL": [],
+            "SCANNER": [],
+        }
+
         for entry in vulnerabilities:
             cve = entry.get("cve", {})
-            cve_id = cve.get("id", "UNKNOWN")
+
             descriptions = cve.get("descriptions", [])
-            description_en = next(
+
+            description = next(
                 (d.get("value") for d in descriptions if d.get("lang") == "en"),
                 "",
             )
-            metrics = cve.get("metrics", {})
-            severity = self._extract_severity(metrics)
-            simplified.append(
-                {
-                    "id": cve_id,
-                    "severity": severity,
-                    "description": description_en,
-                }
-            )
+
+            severity = self._extract_severity(cve.get("metrics", {}))
+
+            record = {
+                "cve_id": cve.get("id"),
+                "description": description,
+                "cvss_score": None,
+                "severity": severity,
+            }
+
+            simplified.append(record)
+
+            desc = description.lower()
+
+            if "sql" in desc or "injection" in desc:
+                lookup["INJECTION"].append(record)
+
+            if "path traversal" in desc:
+                lookup["PATH_TRAVERSAL"].append(record)
+
+            if (
+                "apache" in desc
+                or "http server" in desc
+                or "nginx" in desc
+                or "scanner" in desc
+            ):
+                lookup["SCANNER"].append(record)
 
         payload = {
             "synced_at": datetime.now(timezone.utc).isoformat(),
-            "lookback_days": LOOKBACK_DAYS,
             "count": len(simplified),
             "cves": simplified,
         }
 
         self.target_file.parent.mkdir(parents=True, exist_ok=True)
+
         with open(self.target_file, "w", encoding="utf-8") as f:
-            json.dump(payload, f, indent=2, ensure_ascii=False)
+            json.dump(
+                payload,
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
+
+        lookup_file = self.target_file.parent / "cve_lookup.json"
+
+        with open(lookup_file, "w", encoding="utf-8") as f:
+            json.dump(
+                lookup,
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
 
         return len(simplified)
 
@@ -86,3 +125,16 @@ class CVEUpdater(KnowledgeUpdater):
             if entries:
                 return entries[0].get("cvssData", {}).get("baseSeverity", "UNKNOWN")
         return "UNKNOWN"
+
+    @staticmethod
+    def _extract_cvss(metrics: dict) -> float:
+
+        for key in (
+            "cvssMetricV31",
+            "cvssMetricV30",
+            "cvssMetricV2",
+        ):
+            if metrics.get(key):
+                return metrics[key][0]["cvssData"]["baseScore"]
+
+        return 0.0

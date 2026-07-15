@@ -1,14 +1,20 @@
 {
-  "SQL_INJECTION": {
-    "technique": "T1190",
-    "name": "Exploit Public-Facing Application"
+  "SCANNER": {
+    "technique": "T1596.005",
+    "name": "Scan Databases",
+    "tactic": "reconnaissance",
+    "description": "Adversaries may search within public scan databases for information about victims that can be used during targeting. Various online services continuously publish the results of Internet scans/surveys, often harvesting information such as active IP addresses, hostnames, open ports, certificates, and even server banners.(Citation: Shodan)\n\nAdversaries may search scan databases to gather actionable information. Threat actors can use online resources and lookup tools to harvest information from these services. Adversaries may seek information about their already identified targets, or use these datasets to discover opportunities for successful breaches. Information from these sources may reveal opportunities for other forms of reconnaissance (ex: [Active Scanning](https://attack.mitre.org/techniques/T1595) or [Search Open Websites/Domains](https://attack.mitre.org/techniques/T1593)), establishing operational resources (ex: [Develop Capabilities](https://attack.mitre.org/techniques/T1587) or [Obtain Capabilities](https://attack.mitre.org/techniques/T1588)), and/or initial access (ex: [External Remote Services](https://attack.mitre.org/techniques/T1133) or [Exploit Public-Facing Application](https://attack.mitre.org/techniques/T1190))."
+  },
+  "INJECTION": {
+    "technique": "T1505.001",
+    "name": "SQL Stored Procedures",
+    "tactic": "persistence",
+    "description": "Adversaries may abuse SQL stored procedures to establish persistent access to systems. SQL Stored Procedures are code that can be saved and reused so that database users do not waste time rewriting frequently used SQL queries. Stored procedures can be invoked via SQL statements to the database using the procedure name or via defined events (e.g. when a SQL server application is started/restarted).\n\nAdversaries may craft malicious stored procedures that can provide a persistence mechanism in SQL database servers.(Citation: NetSPI Startup Stored Procedures)(Citation: Kaspersky MSSQL Aug 2019) To execute operating system commands through SQL syntax the adversary may have to enable additional functionality, such as xp_cmdshell for MSSQL Server.(Citation: NetSPI Startup Stored Procedures)(Citation: Kaspersky MSSQL Aug 2019)(Citation: Microsoft xp_cmdshell 2017) \n\nMicrosoft SQL Server can enable common language runtime (CLR) integration. With CLR integration enabled, application developers can write stored procedures using any .NET framework language (e.g. VB .NET, C#, etc.).(Citation: Microsoft CLR Integration 2017) Adversaries may craft or modify CLR assemblies that are linked to stored procedures since these CLR assemblies can be made to execute arbitrary commands.(Citation: NetSPI SQL Server CLR) "
   },
   "PATH_TRAVERSAL": {
     "technique": "T1190",
-    "name": "Exploit Public-Facing Application"
-  },
-  "SCANNER": {
-    "technique": "T1595",
-    "name": "Active Scanning"
+    "name": "Exploit Public-Facing Application",
+    "tactic": "Initial Access",
+    "description": "Attackers exploit vulnerabilities in internet-facing applications."
   }
 }

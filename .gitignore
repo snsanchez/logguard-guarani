@@ -19,13 +19,14 @@ soc_agent/reports/*.json
 *.csv
 *.jsonl
 
+
 # ─────────────────────────────────────────────
 # ML / modelos futuros
 # ─────────────────────────────────────────────
 datasets/*.csv
-src/ml/models/*.joblib
-src/ml/models/*.pkl
-src/ml/models/*
+#src/ml/models/*.joblib
+#src/ml/models/*.pkl
+#src/ml/models/*
 !src/ml/models/.gitkeep
 
 # ─────────────────────────────────────────────
@@ -34,6 +35,7 @@ src/ml/models/*
 __pycache__/
 *.pyc
 *.pyo
+*.py[cod]
 .pytest_cache/
 
 # Virtualenvs
@@ -52,8 +54,12 @@ build/
 .idea/
 *.swp
 
+# data bases
 .DS_Store
 Thumbs.db
+*.sqlite
+*.db
+*.sqlite3
 
 # ─────────────────────────────────────────────
 # Variables de entorno
@@ -63,10 +69,24 @@ Thumbs.db
 !.env.example
 
 
+# ─────────────────────────────────────────────
 # Dynamic knowledge cache
+# ─────────────────────────────────────────────
+
+# CVE / KEV sincronizados
 knowledge/cves/cve_cache.json
+knowledge/cves/cve_lookup.json
 knowledge/cves/kev.json
+knowledge/cves/kev_lookup.json
+knowledge/cves/recent.json
+
+# MITRE sincronizado
+knowledge/mitre/attack_mapping.json
 knowledge/mitre/attack_mappings.json
 
-# Future agent cache
+# Metadata generada por sincronización
+knowledge/metadata.json
+knowledge/cves/metadata.json
+
+# Future cache
 knowledge/cache/

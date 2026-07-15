@@ -9,7 +9,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-from soc_agent.builders import report_builder
+from core.enrichment.knowledge_enricher import enrich_event
 
 from .builders import ReportBuilder
 from .models.agent_analysis import AgentAnalysis
@@ -17,7 +17,7 @@ from .models.analysis import AnalysisContext
 from .prompt_builder import ContextSerializer
 from .recommendation_engine import RecommendationEngine
 from .reports.writer import ReportWriter
-from .tools import event_reader, knowledge_lookup
+from .tools import event_reader
 
 MODEL_NAME = os.getenv(
     "GEMINI_MODEL",
@@ -66,11 +66,11 @@ class SOCAgent:
 
         event = event_reader(context.event)
 
-        knowledge = knowledge_lookup(context)
+        enriched = enrich_event(context.event)
 
         return ContextSerializer.serialize(
             event,
-            knowledge,
+            enriched.knowledge,
         )
 
     async def analyze(

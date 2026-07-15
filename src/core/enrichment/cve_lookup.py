@@ -5,30 +5,20 @@ from pathlib import Path
 
 from soc_agent.models import CVEInfo
 
-DATABASE = Path("knowledge") / "cves" / "recent.json"
+DATABASE = Path("knowledge") / "cves" / "cve_lookup.json"
 
 
-def lookup_cves(
-    attack_type: str | None,
-    path: str,
-) -> list[CVEInfo]:
+def lookup_cves(attack_type: str | None) -> list[CVEInfo]:
+
+    if attack_type is None:
+        return []
+
+    if not DATABASE.exists():
+        return []
 
     with open(DATABASE, encoding="utf-8") as f:
-        data = json.load(f)
+        database = json.load(f)
 
-    matches = []
+    entries = database.get(attack_type, [])
 
-    for cve in data:
-        if attack_type == "INJECTION":
-            if "sql" in cve["description"].lower():
-                matches.append(CVEInfo(**cve))
-
-        elif attack_type == "PATH_TRAVERSAL":
-            if "path traversal" in cve["description"].lower():
-                matches.append(CVEInfo(**cve))
-
-        elif attack_type == "SCANNER":
-            if "apache" in cve["description"].lower():
-                matches.append(CVEInfo(**cve))
-
-    return matches
+    return [CVEInfo(**entry) for entry in entries]
