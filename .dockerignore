@@ -1,14 +1,51 @@
+# Git
+.git
+.github
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Virtualenv
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Test
+tests/
+.pytest_cache/
+
+# Datos
 data/
+datasets/
 outputs/
 
-.git/
-.gitignore
+# Reportes generados
+soc_agent/reports/
 
-__pycache__/
-*.pyc
-*.pyo
-
+# Documentación pesada
 docs/img/
 
+# Logs
+*.log
 *.gz
 *.tar.gz
+
+# Desarrollo
+utils.md
+
+# Cache
+.cache/
+
+# Linux
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example

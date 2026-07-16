@@ -18,16 +18,25 @@ LABEL org.opencontainers.image.authors="Santiago Sánchez"
 LABEL org.opencontainers.image.licenses="GPL-3.0"
 LABEL org.opencontainers.image.source="https://github.com/snsanchez/logguard-guarani"
 
+# Python
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
 RUN useradd --create-home --shell /bin/bash logguard
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
 COPY src/ src/
 COPY soc_agent/ soc_agent/
 COPY knowledge/ knowledge/
+
+COPY README.md .
+COPY LICENSE .
 
 RUN chown -R logguard:logguard /app
 

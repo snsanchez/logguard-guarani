@@ -4,12 +4,11 @@ import os
 import uuid
 from pathlib import Path
 
+from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-
-from core.enrichment.knowledge_enricher import enrich_event
 
 from .builders import ReportBuilder
 from .models.agent_analysis import AgentAnalysis
@@ -19,10 +18,17 @@ from .recommendation_engine import RecommendationEngine
 from .reports.writer import ReportWriter
 from .tools import event_reader
 
+load_dotenv()
+
 MODEL_NAME = os.getenv(
     "GEMINI_MODEL",
     "gemini-2.5-flash-lite",
 )
+
+api_key = os.getenv("GOOGLE_API_KEY")
+
+if not api_key:
+    raise RuntimeError("GOOGLE_API_KEY no está configurada.")
 
 
 class SOCAgent:
@@ -64,13 +70,9 @@ class SOCAgent:
         context: AnalysisContext,
     ) -> str:
 
-        event = event_reader(context.event)
-
-        enriched = enrich_event(context.event)
-
         return ContextSerializer.serialize(
-            event,
-            enriched.knowledge,
+            event_reader(context.event),
+            context.event.knowledge,
         )
 
     async def analyze(

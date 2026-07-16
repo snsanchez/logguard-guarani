@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import asyncio
 
-import soc_agent.config
 from soc_agent.agent import SOCAgent
 from soc_agent.models import (
     AnalysisContext,
