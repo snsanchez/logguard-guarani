@@ -19,6 +19,7 @@ LABEL org.opencontainers.image.licenses="GPL-3.0"
 LABEL org.opencontainers.image.source="https://github.com/snsanchez/logguard-guarani"
 
 # Python
+ENV PYTHONPATH="/app/src:/app"
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
