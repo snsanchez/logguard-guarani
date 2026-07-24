@@ -659,6 +659,7 @@
             margin: 12px 0 16px;
             line-height: 1.7;
             overflow-x: auto;
+            white-space: pre;
         }
 
         .tree .cm {
@@ -2715,26 +2716,16 @@ python3 src/logguard_guarani.py \
         <section id="organizacion">
             <h1>Organización del repositorio</h1>
 
-            <div class="tree">
-                <span class="cm"># Estructura general del repositorio</span>
-                src/ <span class="cm"># entrypoint de la CLI</span> core/
-                <span class="cm"># parser, heurísticas, scoring, clasificación, risk
-                    mapper</span>
-                soc_agent/
-                <span class="cm"># agente SOC (Google ADK), prompts, serializers</span>
-                knowledge/
-                <span class="cm"># base de conocimiento local + updater</span>
-                docker/
-                <span class="cm"># Dockerfile y artefactos de build</span>
-                docs/
-                <span class="cm"># documentación web (GitHub Pages)</span>
-                datasets/
-                <span class="cm"># datasets para entrenamiento del modelo SVM</span>
-                tests/
-                <span class="cm"># suite de tests del pipeline</span>
-                requirements.txt
-                <span class="cm"># dependencias del proyecto</span>
-            </div>
+            <div class="tree"><span class="cm"># Estructura general del repositorio</span>
+├── src/               <span class="cm"># entrypoint de la CLI</span>
+├── core/              <span class="cm"># parser, heurísticas, scoring, clasificación, risk mapper</span>
+├── soc_agent/         <span class="cm"># agente SOC (Google ADK), prompts, serializers</span>
+├── knowledge/         <span class="cm"># base de conocimiento local + updater</span>
+├── docker/            <span class="cm"># Dockerfile y artefactos de build</span>
+├── docs/              <span class="cm"># documentación web (GitHub Pages)</span>
+├── datasets/          <span class="cm"># datasets para entrenamiento del modelo SVM</span>
+├── tests/             <span class="cm"># suite de tests del pipeline</span>
+└── requirements.txt   <span class="cm"># dependencias del proyecto</span></div>
 
             <table>
                 <thead>
@@ -2820,22 +2811,14 @@ python3 src/logguard_guarani.py \
                 cada fuente de forma independiente.
             </p>
 
-            <div class="tree">
-                <span class="cm"># Estructura interna de knowledge/</span>
-                knowledge/
-                ├── mitre/
-                <span class="cm"># técnicas y tácticas MITRE ATT&amp;CK</span>
-                ├── cves/
-                <span class="cm"># cache local de CVEs (NVD) y CISA KEV</span>
-                ├── playbooks/
-                <span class="cm"># playbooks defensivos usados por el SOC Agent</span>
-                ├── references/
-                <span class="cm"># matrices de severidad, OWASP Top 10, códigos
-                    HTTP</span>
-                └── metadata.json
-                <span class="cm"># versión y fecha de última sincronización</span>
+            <div class="tree"><span class="cm"># Estructura interna de knowledge/</span>
+knowledge/
+├── mitre/           <span class="cm"># técnicas y tácticas MITRE ATT&amp;CK</span>
+├── cves/            <span class="cm"># cache local de CVEs (NVD) y CISA KEV</span>
+├── playbooks/       <span class="cm"># playbooks defensivos usados por el SOC Agent</span>
+├── references/      <span class="cm"># matrices de severidad, OWASP Top 10, códigos HTTP</span>
+└── metadata.json    <span class="cm"># versión y fecha de última sincronización</span>
             </div>
-
             <table>
                 <thead>
                     <tr>
