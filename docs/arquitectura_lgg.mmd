@@ -1,0 +1,269 @@
+flowchart LR
+
+%%====================================================
+%% TITLE
+%%====================================================
+
+TITLE["LogGuard Guaraní v3.0<br/>Defensive Apache Log Analysis Platform"]
+
+%%====================================================
+%% INPUT
+%%====================================================
+
+subgraph INPUT["Input Layer"]
+
+LOGS["Apache Access Logs<br/>Combined Log Format<br/><br/>SIU Guaraní<br/>University Web Applications"]
+
+end
+
+%%====================================================
+%% PARSER
+%%====================================================
+
+subgraph PARSER["Parsing Layer"]
+
+LP["Apache Log Parser"]
+
+FIELDS["Field Extraction
+• timestamp
+• ip
+• method
+• path
+• status
+• user-agent
+• bytes
+• referer"]
+
+NORMALIZE["Normalization"]
+
+AE["AnalysisEvent"]
+
+LP --> FIELDS --> NORMALIZE --> AE
+
+end
+
+%%====================================================
+%% DETECTION
+%%====================================================
+
+subgraph DET["Detection Engine"]
+
+HEUR["Heuristic Engine"]
+
+SIG1["INJECTION"]
+
+SIG2["PATH_TRAVERSAL"]
+
+SIG3["SCANNER"]
+
+SIG4["ERROR_ABUSE"]
+
+SIG5["UNKNOWN"]
+
+SCORE["Risk Scoring"]
+
+CLASS["Attack Classification"]
+
+ML["SVM Classifier"]
+
+MAP["Risk Mapper"]
+
+EVID["EventEvidence"]
+
+HEUR --> SIG1
+HEUR --> SIG2
+HEUR --> SIG3
+HEUR --> SIG4
+HEUR --> SIG5
+
+HEUR --> SCORE
+SCORE --> CLASS
+CLASS --> ML
+ML --> MAP
+MAP --> EVID
+
+end
+
+%%====================================================
+%% KNOWLEDGE
+%%====================================================
+
+subgraph KNOW["Threat Intelligence"]
+
+ENRICH["Knowledge Enricher"]
+
+CTX["KnowledgeContext"]
+
+MITRE["MITRE ATT&CK"]
+
+CVE["CVE Cache"]
+
+KEV["CISA KEV Cache"]
+
+ENRICH --> MITRE
+ENRICH --> CVE
+ENRICH --> KEV
+
+ENRICH --> CTX
+
+end
+
+%%====================================================
+%% ENRICHED EVENT
+%%====================================================
+
+subgraph DOMAIN["Domain Models"]
+
+ENR["EnrichedEvent"]
+
+AE2["AnalysisEvent"]
+
+EE["EventEvidence"]
+
+KC["KnowledgeContext"]
+
+ENR --> AE2
+ENR --> EE
+ENR --> KC
+
+end
+
+%%====================================================
+%% SOC AGENT
+%%====================================================
+
+subgraph SOC["SOC Agent"]
+
+NOTE["Reasoning Only<br/>No Detection"]
+
+CORE["Agent Core"]
+
+READ["Event Reader"]
+
+SUMMARY["Event Summary"]
+
+ANALYSIS["Security Analysis"]
+
+RECOMMEND["Recommendations"]
+
+REPORT["SOC Report"]
+
+NOTE --> CORE
+
+CORE --> READ
+
+READ --> SUMMARY
+
+SUMMARY --> ANALYSIS
+
+ANALYSIS --> RECOMMEND
+
+RECOMMEND --> REPORT
+
+end
+
+%%====================================================
+%% RENDERERS
+%%====================================================
+
+subgraph OUTPUT["Report Generation"]
+
+JSON["JSON Renderer"]
+
+MD["Markdown Renderer"]
+
+REPORT --> JSON
+
+REPORT --> MD
+
+end
+
+%%====================================================
+%% KNOWLEDGE UPDATE
+%%====================================================
+
+subgraph UPDATE["Knowledge Updater"]
+
+CLI["--actualizar-conocimiento --online"]
+
+NVD["NVD API"]
+
+MITREAPI["MITRE ATT&CK"]
+
+CISA["CISA KEV"]
+
+CACHE["Offline Knowledge Cache"]
+
+CLI --> NVD
+
+CLI --> MITREAPI
+
+CLI --> CISA
+
+NVD --> CACHE
+
+MITREAPI --> CACHE
+
+CISA --> CACHE
+
+end
+
+%%====================================================
+%% FLOW
+%%====================================================
+
+TITLE --> LOGS
+
+LOGS --> LP
+
+AE --> HEUR
+
+EVID --> ENR
+
+AE --> ENRICH
+
+CTX --> ENR
+
+ENR --> CORE
+
+%%====================================================
+%% PRINCIPLES
+%%====================================================
+
+subgraph PRINCIPLES["Architectural Principles"]
+
+P1["Offline-first"]
+
+P2["Defensive Only"]
+
+P3["Explainable AI"]
+
+P4["Modular"]
+
+P5["Knowledge-driven"]
+
+P6["Human Readable Reports"]
+
+P7["Detection ≠ Reasoning"]
+
+end
+
+%%====================================================
+%% STYLES
+%%====================================================
+
+classDef title fill:#0b1f33,color:#fff,stroke:#0b1f33,stroke-width:2px;
+classDef layer fill:#eef5ff,stroke:#4677aa,stroke-width:1.5px;
+classDef model fill:#f7f7ff,stroke:#6c63ff;
+classDef output fill:#eefdf2,stroke:#2f855a;
+classDef warn fill:#fff5e6,stroke:#d97706;
+
+class TITLE title;
+
+class LP,HEUR,SCORE,CLASS,ML,MAP,ENRICH,CORE,REPORT layer;
+
+class AE,EE,KC,ENR,CTX model;
+
+class JSON,MD output;
+
+class NOTE warn;
