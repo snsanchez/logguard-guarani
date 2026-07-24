@@ -1551,18 +1551,28 @@ python3 src/logguard_guarani.py access.log \
 
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph TD subgraph DET["Detection Pipeline —
-                    determinístico"] direction TB A2[Parser] -->
-                    B2[Heurísticas] B2 --> C2[Risk Scoring] C2 --> D2[Attack
-                    Classification] D2 --> E2["ML (SVM)"] E2 --> F2[Risk
-                    Mapper] end subgraph REA["Reasoning Pipeline —
-                    interpretativo"] direction TB G2[Knowledge Enrichment]
-                    --> H2[SOC Agent] H2 --> I2[SOC Report] end F2 --> G2
-                    classDef det
-                    fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef rea
-                    fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    class A2,B2,C2,D2,E2,F2 det; class G2,H2,I2 rea;
+                    flowchart TD
+                        subgraph DET["Detection Pipeline — determinístico"]
+                            direction TB
+                            A2[Parser] --> B2[Heurísticas]
+                            B2 --> C2[Risk Scoring]
+                            C2 --> D2[Attack Classification]
+                            D2 --> E2["ML (SVM)"]
+                            E2 --> F2[Risk Mapper]
+                        end
+
+                        subgraph REA["Reasoning Pipeline — interpretativo"]
+                            direction TB
+                            G2[Knowledge Enrichment] --> H2[SOC Agent]
+                            H2 --> I2[SOC Report]
+                        end
+
+                        F2 --> G2
+
+                        classDef det fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        classDef rea fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        class A2,B2,C2,D2,E2,F2 det; 
+                        class G2,H2,I2 rea;
                 </div>
             </div>
             <p class="fig-caption">
@@ -2023,19 +2033,21 @@ python3 src/logguard_guarani.py access.log \
 
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph LR M[MITRE ATT&amp;CK] --> KB[(Knowledge Base<br />local
-                    · offline)] C[NVD CVE Database] --> KB K[CISA KEV] -->
-                    KB O[OWASP references] --> KB KB --> EN[Knowledge
-                    Enrichment] EN --> EE[EnrichedEvent] U["Knowledge
-                    Updater<br />(--actualizar-conocimiento --online)"]
-                    -.sincroniza bajo demanda.-> KB classDef src
-                    fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef kb
-                    fill:#1e1e2e,stroke:#c0392b,stroke-width:1.5px,color:#cdd6f4,font-family:IBM
-                    Plex Mono,font-size:12px; classDef out
-                    fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    class M,C,K,O src; class KB kb; class EN,EE out; class U
-                    src;
+                    graph LR
+                        M[MITRE ATT&CK] --> KB[(Knowledge Base<br />local<br />· offline)]
+                        C[NVD CVE Database] --> KB
+                        K[CISA KEV] --> KB
+                        O[OWASP references] --> KB
+                        KB --> EN[Knowledge<br />Enrichment]
+                        EN --> EE[EnrichedEvent]
+                        U["Knowledge<br />Updater<br />(--actualizar-conocimiento --online)"] -.sincroniza bajo demanda.-> KB
+                        classDef src fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        classDef kb fill:#1e1e2e,stroke:#c0392b,stroke-width:1.5px,color:#cdd6f4,font-family:IBM Plex Mono,font-size:12px;
+                        classDef out fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        class M,C,K,O src;
+                        class KB kb;
+                        class EN,EE out;
+                        class U src;
                 </div>
             </div>
             <p class="fig-caption">
@@ -2177,10 +2189,11 @@ python3 src/logguard_guarani.py access.log \
 
             <div class="notice crit">
                 <strong>Responsabilidades del agente — y sus límites</strong>
-                El agente <strong>NO</strong> detecta ataques. El agente
-                <strong>NO</strong> reemplaza las heurísticas. El agente
-                <strong>NO</strong> analiza logs directamente. Su única
-                responsabilidad es interpretar un
+                El agente NO detecta ataques. <br>
+                El agente NO reemplaza las heurísticas. <br>
+                El agente NO analiza logs directamente. <br>
+                
+                Su única responsabilidad es interpretar un
                 <code>EnrichedEvent</code> ya producido por el pipeline
                 determinístico y generar un análisis estructurado.
             </div>
@@ -2188,14 +2201,18 @@ python3 src/logguard_guarani.py access.log \
             <h2>Flujo del agente</h2>
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph TD A[EnrichedEvent] --> B[ContextSerializer] B -->
-                    C[Prompt] C --> D[Gemini] D --> E[AgentAnalysis] E -->
-                    F[ReportBuilder] F --> G[SOCReport] G --> H[Markdown
-                    Renderer] classDef n
-                    fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef llm
-                    fill:#fdf2f2,stroke:#c0392b,stroke-width:1.5px,color:#1a1a1a,font-weight:bold;
-                    class A,B,C,E,F,G,H n; class D llm;
+                    graph TD
+                        A[EnrichedEvent] --> B[ContextSerializer]
+                        B --> C[Prompt]
+                        C --> D[Gemini]
+                        D --> E[AgentAnalysis]
+                        E --> F[ReportBuilder]
+                        F --> G[SOCReport]
+                        G --> H[Markdown Renderer]
+                        classDef n fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        classDef llm fill:#fdf2f2,stroke:#c0392b,stroke-width:1.5px,color:#1a1a1a,font-weight:bold;
+                        class A,B,C,E,F,G,H n;
+                        class D llm;
                 </div>
             </div>
             <p class="fig-caption">
@@ -2233,19 +2250,29 @@ python3 src/logguard_guarani.py access.log \
 
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph TD AE[AnalysisEvent] --> EV[EventEvidence] AE -->
-                    EE[EnrichedEvent] EV --> EE EE --> KC[KnowledgeContext]
-                    KC --> MT[MitreTechnique] KC --> CV[CVEInfo] KC -->
-                    KE[KEVEntry] EV --> EI[EvidenceItem] EE -->
-                    AC[AnalysisContext] AC --> AA[AgentAnalysis] AA -->
-                    RC[Recommendation] AA --> SR[SOCReport] classDef core
-                    fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef know
-                    fill:#fdf9ee,stroke:#9a6d00,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef agent
-                    fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    class AE,EV,EE,EI core; class KC,MT,CV,KE know; class
-                    AC,AA,RC,SR agent;
+                    flowchart TB
+                        AE["AnalysisEvent"] --> EV["EventEvidence"] & EE["EnrichedEvent"]
+                        EV --> EE & EI["EvidenceItem"]
+                        EE --> KC["KnowledgeContext"] & AC["AnalysisContext"]
+                        KC --> MT["MitreTechnique"] & CV["CVEInfo"] & KE["KEVEntry"]
+                        AC --> AA["AgentAnalysis"]
+                        AA --> RC["Recommendation"] & SR["SOCReport"]
+
+                        AE:::core
+                        EV:::core
+                        EE:::core
+                        KC:::know
+                        MT:::know
+                        CV:::know
+                        KE:::know
+                        EI:::core
+                        AC:::agent
+                        AA:::agent
+                        RC:::agent
+                        SR:::agent
+                        classDef core fill:#f0f4f8,stroke:#1a5276,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px
+                        classDef know fill:#fdf9ee,stroke:#9a6d00,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px
+                        classDef agent fill:#fdf2f2,stroke:#c0392b,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px
                 </div>
             </div>
             <p class="fig-caption">
@@ -2443,13 +2470,14 @@ python3 src/logguard_guarani.py access.log \
 
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph LR AE[AnalysisEvent] -->|"+ EventEvidence<br />+
-                    KnowledgeContext"| EE[EnrichedEvent] EE -->|SOC Agent|
-                    SR[SOCReport] classDef n
-                    fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    classDef out
-                    fill:#fdf2f2,stroke:#c0392b,stroke-width:1.5px,color:#1a1a1a,font-family:Inter,font-size:13px,font-weight:bold;
-                    class AE,EE n; class SR out;
+                    graph LR
+                        AE[AnalysisEvent] -->|"+ EventEvidence
+                        + KnowledgeContext"| EE[EnrichedEvent]
+                        EE -->|SOC Agent| SR[SOCReport]
+                        classDef n fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        classDef out fill:#fdf2f2,stroke:#c0392b,stroke-width:1.5px,color:#1a1a1a,font-family:Inter,font-size:13px,font-weight:bold;
+                        class AE,EE n;
+                        class SR out;
                 </div>
             </div>
             <p class="fig-caption">
@@ -3031,11 +3059,12 @@ python3 src/logguard_guarani.py \
 
             <div class="diagram-wrap">
                 <div class="mermaid">
-                    graph TD A[Collectors] --> B[LogGuard Core] B -->
-                    C[Correlation Engine] C --> D[SOC Agent] D -->
-                    E[Dashboard / TUI] classDef n
-                    fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
-                    class A,B,C,D,E n;
+                    graph TD
+                        A[Collectors] --> B[LogGuard Core]
+                        C[Correlation Engine] --> D[SOC Agent]
+                        E[Dashboard / TUI]
+                        classDef n fill:#f9f9f9,stroke:#aaaaaa,stroke-width:1px,color:#1a1a1a,font-family:Inter,font-size:13px;
+                        class A,B,C,D,E n;
                 </div>
             </div>
             <p class="fig-caption">
