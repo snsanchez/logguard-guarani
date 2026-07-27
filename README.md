@@ -19,9 +19,9 @@
   </p>
 
   <p>
-    📖 <a href="https://snsanchez.github.io/logguard-guarani/"><strong>Ver documentación completa</strong></a>
+    📖 <a href="https://snsanchez.github.io/logguard-guarani/"><strong>Documentación completa</strong></a>
     &nbsp;·&nbsp;
-    📄 <a href="https://snsanchez.github.io/logguard-guarani/#paper">Short paper</a>
+    📄 <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard%20Guarani%20-%20Short%20Paper.pdf">Short paper (PDF)</a>
     &nbsp;·&nbsp;
     🐛 <a href="https://github.com/snsanchez/logguard-guarani/issues">Reportar un problema</a>
   </p>
