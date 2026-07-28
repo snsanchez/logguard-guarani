@@ -1,0 +1,193 @@
+
+Screen {
+    layout: horizontal;
+    background: #0b0c0e;
+    color: #d4d2cf;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+
+#sidebar {
+    width: 34;
+    border: heavy #7a2015;
+    background: #0e0f12;
+    padding: 0 1;
+}
+
+#sidebar:focus-within {
+    border: heavy #c0392b;
+}
+
+#sidebar-title {
+    content-align: center middle;
+    text-style: bold;
+    height: 3;
+    color: #e05a4a;
+    border-bottom: solid #2a1512;
+}
+
+OptionList {
+    scrollbar-size: 1 1;
+    scrollbar-color: #7a2015;
+    scrollbar-color-hover: #c0392b;
+    scrollbar-color-active: #e05a4a;
+    scrollbar-background: #0e0f12;
+    background: #0e0f12;
+    color: #9a9a9a;
+    border: none;
+}
+
+OptionList > .option-list--option {
+    padding: 0 1;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: #c0392b;
+    color: #0b0c0e;
+    text-style: bold;
+}
+
+OptionList > .option-list--option-hover {
+    background: #241412;
+    color: #e8e6e3;
+}
+
+OptionList > .option-list--option-disabled {
+    color: #4a4a4a;
+    text-style: bold;
+}
+
+/* ── Panel principal ─────────────────────────────────────── */
+
+#main {
+    layout: vertical;
+}
+
+#status {
+    height: 3;
+    content-align: left middle;
+    padding: 0 2;
+    border: heavy #7a2015;
+    background: #0e0f12;
+    color: #9a9a9a;
+}
+
+#console {
+    border: heavy #7a2015;
+    background: #08090a;
+    color: #b8b6b2;
+    padding: 0 1;
+    overflow-y: auto;
+    scrollbar-size: 1 1;
+    scrollbar-color: #7a2015;
+    scrollbar-color-hover: #c0392b;
+    scrollbar-color-active: #e05a4a;
+    scrollbar-background: #08090a;
+}
+
+#console:focus {
+    border: heavy #c0392b;
+}
+
+/* ── Header / Footer ─────────────────────────────────────── */
+
+Header {
+    background: #0e0f12;
+    color: #c0392b;
+    text-style: bold;
+}
+
+Header .header--tall {
+    background: #0e0f12;
+}
+
+Footer {
+    background: #0e0f12;
+    color: #6b6f76;
+}
+
+Footer > .footer--key {
+    background: #0e0f12;
+    color: #c0392b;
+    text-style: bold;
+}
+
+Footer > .footer--description {
+    background: #0e0f12;
+    color: #9a9a9a;
+}
+
+Footer > .footer--highlight {
+    background: #c0392b;
+    color: #0b0c0e;
+}
+
+/* ── Modales ─────────────────────────────────────────────── */
+
+ModalScreen {
+    align: center middle;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+Dialog, #modal-box {
+    width: 60;
+    height: auto;
+    border: heavy #c0392b;
+    background: #0e0f12;
+    padding: 1 2;
+    color: #d4d2cf;
+}
+
+
+#logo {
+
+    height: 6;
+
+    width: 100%;
+
+    content-align: left bottom;
+
+    color: #7a2015;
+
+    padding-left: 1;
+}
+
+
+/* ── Path Input Dialog ─────────────────────────────────── */
+
+#modal-title {
+    width: 100%;
+    content-align: center middle;
+    color: #e05a4a;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#modal-description {
+    width: 100%;
+    color: #9a9a9a;
+    margin-bottom: 1;
+}
+
+#path-input {
+    margin-bottom: 1;
+    border: heavy #7a2015;
+    background: #08090a;
+    color: #d4d2cf;
+}
+
+#path-input:focus {
+    border: heavy #c0392b;
+}
+
+#save-path {
+    width: 100%;
+    background: #7a2015;
+    color: #d4d2cf;
+    text-style: bold;
+}
+
+#save-path:hover {
+    background: #c0392b;
+    color: #0b0c0e;
+}
