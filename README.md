@@ -207,7 +207,7 @@ Construcción:
 
 ```bash
 docker build \
-    -t san2s/logguard-guarani:4.0.0 .
+    -t san2s/logguard-guarani:4.0 .
 ```
 
 Ejecución mediante CLI:
@@ -215,7 +215,7 @@ Ejecución mediante CLI:
 ```bash
 docker run --rm \
     -v /ruta/logs:/data \
-    san2s/logguard-guarani:4.0.0 \
+    san2s/logguard-guarani:4.0 \
     /data/access.log
 ```
 ---
