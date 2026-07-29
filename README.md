@@ -6,8 +6,8 @@
   <h1>LogGuard Guaraní</h1>
 
   <p>
-    <strong>Analizador defensivo de logs Apache</strong> con detección heurística, Machine Learning,
-    Threat Intelligence y un agente SOC.
+    <strong>Plataforma defensiva para el análisis de logs Apache</strong><br>
+    Heurísticas • Machine Learning • Threat Intelligence • Agente SOC • TUI
   </p>
 
   <p>
@@ -19,9 +19,9 @@
   </p>
 
   <p>
-    📖 <a href="https://snsanchez.github.io/logguard-guarani/"><strong>Documentación completa</strong></a>
+    📖 <a href="https://snsanchez.github.io/logguard-guarani/"><strong>Documentación</strong></a>
     &nbsp;·&nbsp;
-    📄 <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard%20Guarani%20-%20Short%20Paper.pdf">Short paper (PDF)</a>
+    📄 <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard%20Guarani%20-%20Short%20Paper.pdf">Short paper</a>
     &nbsp;·&nbsp;
     🐛 <a href="https://github.com/snsanchez/logguard-guarani/issues">Reportar un problema</a>
   </p>
@@ -29,28 +29,125 @@
 
 ---
 
-Analizador defensivo de logs Apache orientado a la detección de anomalías, clasificación de amenazas web y asistencia automática de análisis mediante un agente SOC.
+LogGuard Guaraní es una plataforma offline-first para el análisis defensivo de logs Apache.
 
-El proyecto fue desarrollado como prueba de concepto para entornos universitarios utilizando logs del ecosistema SIU Guaraní, con un enfoque modular, explicable y offline-first.
+Combina detección heurística, clasificación mediante Machine Learning, enriquecimiento con inteligencia de amenazas y un **agente SOC** asistido por IA para ayudar al analista a interpretar eventos de alto riesgo.
 
-## Tabla de contenidos
+El proyecto fue desarrollado como prueba de concepto en el LIA (Laboratorio de Informática Aplicada) para el ecosistema **SIU Guaraní** de la Universidad Nacional de Río Negro, aunque su arquitectura resulta aplicable a cualquier servidor Apache.
 
-- [Características principales](#características-principales)
-  - [Pipeline de análisis](#pipeline-de-análisis)
-  - [Detección y clasificación](#detección-y-clasificación)
-  - [Machine Learning](#machine-learning)
-  - [Threat Intelligence](#threat-intelligence)
-  - [SOC Agent](#soc-agent)
-- [Vista previa](#vista-previa)
-- [Instalación](#instalación)
-- [Uso](#uso)
-- [Docker](#docker)
-- [Arquitectura futura](#arquitectura-futura)
-- [Cómo citar](#cómo-citar)
-- [Autores](#autores)
-- [Contribuciones](#contribuciones)
-- [Seguridad](#seguridad)
-- [Licencia](#licencia)
+---
+
+# Características
+
+- Análisis de logs Apache completamente offline
+- Motor heurístico explicable
+- Clasificación mediante Machine Learning (SVM)
+- Enriquecimiento con MITRE ATT&CK, NVD y CISA KEV
+- Generación automática de reportes SOC
+- Base de conocimiento local actualizable
+- Interfaz TUI interactiva
+- Interfaz CLI para automatización
+- Arquitectura modular y extensible
+
+---
+
+# Interfaz TUI
+
+LogGuard v4 incorpora una **Text User Interface (TUI)** desarrollada con Textual que facilita su uso desde una interfaz moderna e interactiva.
+
+Permite:
+
+- seleccionar archivos de log visualmente
+- configurar la carpeta de trabajo
+- actualizar la base de conocimiento
+- visualizar reportes SOC renderizados
+- ejecutar análisis en tiempo real
+- mantener configuración persistente
+
+Toda la lógica continúa ejecutándose mediante la CLI oficial de LogGuard, por lo que ambas interfaces producen exactamente los mismos resultados.
+
+---
+
+## Vista previa
+
+> Próximamente se incorporará un video de demostración.
+
+<!-- VIDEO -->
+
+<p align="center">
+
+<!-- Screenshot TUI -->
+
+</p>
+
+---
+
+# Interfaz CLI
+
+LogGuard CLI resulta ideal para automatización, cron, Docker y servidores sin interfaz interactiva.
+
+Ejemplo básico:
+
+```bash
+python3 src/logguard_guarani.py access.log
+```
+
+Mostrar únicamente eventos relevantes:
+
+```bash
+python3 src/logguard_guarani.py access.log --solo-anomalos
+```
+
+Ejecutar clasificación ML + agente SOC:
+
+```bash
+python3 src/logguard_guarani.py access.log --razonar
+```
+
+Actualizar la base de conocimiento:
+
+```bash
+python3 src/logguard_guarani.py \
+    --actualizar-conocimiento \
+    --online
+```
+
+> Referencia completa de flags y ejemplos adicionales: [Referencia CLI](https://snsanchez.github.io/logguard-guarani/#cli).
+
+---
+
+# Demo incluida
+
+El repo incluye un ejemplo completamente funcional para probar LogGuard sin necesidad de disponer de logs propios.
+
+```
+examples/
+├── apache_demo.log
+└── apache_demo_report.md
+```
+
+Con este archivo es posible:
+
+- ejecutar un análisis completo
+- generar un reporte SOC
+- comparar el resultado con un reporte previamente generado
+
+Es el punto de partida recomendado para conocer el funcionamiento de la herramienta.
+
+---
+
+# Instalación
+
+```bash
+python3 -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+---
+
 
 ## Características principales
 
@@ -77,79 +174,12 @@ Threat Intelligence Enrichment
     |
 SOC Agent
     |
-Report
+Markdown Report
 ```
 
 > Para el detalle completo de cada etapa, modelos de datos y la separación entre el pipeline de detección (determinístico) y el de razonamiento (agente SOC), ver la [documentación de arquitectura](https://snsanchez.github.io/logguard-guarani/#architecture-overview).
 
-### Detección y clasificación
-
-El motor analiza:
-
-- URLs y parámetros HTTP
-- User-Agent
-- códigos de respuesta HTTP
-- patrones de ataque conocidos
-- comportamiento anómalo por IP
-
-Tipos de amenazas:
-
-- SQL Injection
-- Path Traversal
-- Scanner / Reconocimiento
-- Error Abuse
-- Actividad desconocida
-
-### Machine Learning
-
-LogGuard incorpora un modelo SVM para clasificación complementaria.
-
-El modelo utiliza características extraídas del evento:
-
-- score de riesgo
-- status HTTP
-- tamaño de respuesta
-- longitud de URL
-- método HTTP
-
-El modelo retorna:
-
-- predicción
-- nivel de confianza
-
-El ML no reemplaza las reglas de detección, sino que aporta una señal adicional explicable.
-
-### Threat Intelligence
-
-Los eventos son enriquecidos utilizando una base de conocimiento local:
-
-- MITRE ATT&CK
-- NVD CVE Database
-- CISA Known Exploited Vulnerabilities (KEV)
-
-La base puede actualizarse mediante:
-
-```bash
-python3 src/logguard_guarani.py \
-  --actualizar-conocimiento \
-  --online
-```
-
-Durante el análisis normal **no se realizan consultas online** — toda la inteligencia se consulta offline contra esta base local.
-
-### SOC Agent
-
-La versión 3 incorpora un agente SOC (implementado con Google ADK) encargado de analizar eventos de alto riesgo.
-
-El agente recibe eventos enriquecidos con:
-
-- evidencia de detección
-- nivel de riesgo
-- contexto MITRE
-- CVEs relacionados
-- vulnerabilidades explotadas conocidas
-
-Su objetivo es generar análisis estructurados y recomendaciones — **nunca detecta ataques ni reemplaza las heurísticas**, solo interpreta lo que el pipeline determinístico ya produjo.
+---
 
 ## Vista previa
 
@@ -165,93 +195,32 @@ Fragmento de un reporte generado por el agente SOC:
   <img src="docs/img/reporte_SOC.png" alt="Reporte SOC generado por LogGuard Guaraní" width="85%">
 </p>
 
-## Instalación
+---
+# Docker
 
-Requisitos:
+La imagen Docker incluye la aplicación completa:
 
-- Python 3.11+
-- Dependencias definidas en `requirements.txt`
-
-Instalación:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-## Uso
-
-Análisis básico:
-
-```bash
-python3 src/logguard_guarani.py access.log
-```
-
-Mostrar solamente eventos relevantes:
-
-```bash
-python3 src/logguard_guarani.py access.log --solo-anomalos
-```
-
-Ejecutar clasificación ML:
-
-```bash
-python3 src/logguard_guarani.py access.log --razonar
-```
-
-Exportar eventos enriquecidos:
-
-```bash
-python3 src/logguard_guarani.py access.log \
-  --razonar \
-  --exportar-json outputs/eventos.jsonl
-```
-
-> Referencia completa de flags y ejemplos adicionales: [Referencia CLI](https://snsanchez.github.io/logguard-guarani/#cli).
-
-## Docker
+- CLI
+- TUI
+- Base de conocimiento
+- SOC Agent
 
 Construcción:
 
 ```bash
 docker build \
-  -t san2s/logguard-guarani:3.0.0 \
-  -f docker/Dockerfile .
+    -t san2s/logguard-guarani:4.0.0 .
 ```
 
-Ejecución:
+Ejecución mediante CLI:
 
 ```bash
 docker run --rm \
-  -v /ruta/logs:/data \
-  san2s/logguard-guarani:3.0.0 \
-  /data/access.log --solo-anomalos
+    -v /ruta/logs:/data \
+    san2s/logguard-guarani:4.0.0 \
+    /data/access.log
 ```
-
-## Arquitectura futura
-
-LogGuard forma parte de una arquitectura mayor:
-
-```
-Collectors
-    |
-LogGuard Core
-    |
-Correlation Engine
-    |
-SOC Agent
-    |
-Dashboard / TUI
-```
-
-El objetivo futuro es integrar múltiples fuentes:
-
-- Apache logs
-- logs de sistema
-- infraestructura de red
-- servicios institucionales
+---
 
 ## Cómo citar
 
@@ -261,6 +230,8 @@ Si utilizás LogGuard Guaraní en un trabajo académico o de investigación, pod
 
 El artículo completo, con metodología, resultados y referencias, está disponible en la [sección Short Paper de la documentación](https://snsanchez.github.io/logguard-guarani/#paper).
 
+---
+
 ## Autores
 
 Desarrollado en el **Laboratorio de Informática Aplicada (LIA)**, Universidad Nacional de Río Negro — Sede Atlántica, Viedma.
@@ -268,17 +239,19 @@ Desarrollado en el **Laboratorio de Informática Aplicada (LIA)**, Universidad N
 - Santiago Nicolás Sánchez
 - Nicolás García
 - Nicolás Castro
-
+---
 ## Contribuciones
 
 ¿Encontraste un bug o tenés una idea para mejorar el proyecto? Los [issues](https://github.com/snsanchez/logguard-guarani/issues) y pull requests son bienvenidos. Si vas a proponer un cambio grande, abrí primero un issue para discutirlo.
 
+---
 ## Seguridad
 
 Este repositorio no contiene logs reales ni información institucional sensible.
 
 Los datos utilizados durante el desarrollo fueron excluidos del repositorio por motivos de privacidad y seguridad.
 
+---
 ## Licencia
 
 Distribuido bajo licencia **GPL v3**. Ver [`LICENSE`](LICENSE) para más información.
