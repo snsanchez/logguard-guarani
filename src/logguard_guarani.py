@@ -367,6 +367,7 @@ def main():
     # ── Analizar cada request ────────────────────────────
     stats = defaultdict(int)
     eventos = []
+    soc_events = []
 
     for req in registros:
         etiqueta, razones = analizar_request(req)
@@ -428,19 +429,8 @@ def main():
                 f"(confianza={evento['ml_confidence']})"
             )
 
-        # ---------------------------------------------------------
-        # Sólo los eventos realmente peligrosos pasan al SOC Agent
-
         if enriched.evidence.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL):
-            context = AnalysisContext(
-                event=enriched,
-            )
-
-            report = asyncio.run(SOCAgent().analyze(context))
-
-            print()
-            print("Reporte SOC generado:")
-            print(report.title)
+            soc_events.append(enriched)
 
     # ─────────────────────────────────────────
     # EXPORTAR
@@ -456,6 +446,21 @@ def main():
     alertas_ip = analizar_patrones_ip(registros)
     # ── Resumen ──────────────────────────────────────────
     imprimir_resumen(stats, alertas_ip, registros=registros, resultados=eventos)
+
+    # --- ! Solo se genera un reporte para el evento con mas riesgo detectado en el log
+    if soc_events:
+        most_relevant = max(
+            soc_events,
+            key=lambda e: e.evidence.score,
+        )
+        context = AnalysisContext(
+            event=most_relevant,
+        )
+        report = asyncio.run(SOCAgent().analyze(context))
+
+        print()
+        print("Reporte SOC generado:")
+        print(report.title)
 
 
 if __name__ == "__main__":
