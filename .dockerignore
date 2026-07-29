@@ -29,7 +29,7 @@ soc_agent/reports/*.md
 soc_agent/reports/*.json
 
 # Documentación pesada
-docs/img/
+docs/*
 
 # Logs
 *.log
