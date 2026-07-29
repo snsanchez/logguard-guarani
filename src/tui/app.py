@@ -220,6 +220,7 @@ class LogGuardApp(App):
         self,
         process: RunningProcess,
     ):
+
         console = self.query_one("#console", RichLog)
         console.clear()
         console.write("Aguarde un momento...")
@@ -229,18 +230,75 @@ class LogGuardApp(App):
             process.description,
         )
         assert process.process.stdout is not None
+
+        capturing_traceback = False
+        traceback_lines: list[str] = []
+
         for line in process.process.stdout:
+            text = line.rstrip()
+            if text.startswith("Traceback"):
+                capturing_traceback = True
+                traceback_lines = [text]
+                continue
+
+            if capturing_traceback:
+                traceback_lines.append(text)
+                # El traceback termina cuando aparece una línea vacía.
+                if text == "":
+                    capturing_traceback = False
+                    traceback = "\n".join(traceback_lines)
+                    # ¿Proviene de ADK / OpenTelemetry?
+                    if (
+                        "google/adk" in traceback
+                        or "google/genai" in traceback
+                        or "opentelemetry" in traceback
+                    ):
+                        if "503" in traceback:
+                            self.call_from_thread(
+                                console.write,
+                                "[yellow]⚠ Gemini está temporalmente saturado (HTTP 503). Intente nuevamente más tarde.[/]",
+                            )
+                        elif "SOC Agent final response had no content" in traceback:
+                            self.call_from_thread(
+                                console.write,
+                                "[yellow]⚠ El SOC Agent no recibió una respuesta válida del modelo.[/]",
+                            )
+                        else:
+                            self.call_from_thread(
+                                console.write,
+                                "[yellow]⚠ Google ADK produjo un error interno (telemetría/API).[/]",
+                            )
+                    else:
+                        # Traceback propio -> mostrar completo.
+                        for tb_line in traceback_lines:
+                            self.call_from_thread(
+                                console.write,
+                                Text.from_ansi(tb_line),
+                            )
+                continue
+
             self.call_from_thread(
                 console.write,
                 # from_ansi para que renderice la salida a color
                 Text.from_ansi(line.rstrip()),
             )
+
         process.process.wait()
         self.controller.process_finished(process)
         self.call_from_thread(
             self.update_status,
             "Listo",
         )
+
+        if process.process.returncode != 0:
+            self.call_from_thread(
+                console.write,
+                "",
+            )
+            self.call_from_thread(
+                console.write,
+                "[red]El proceso finalizó con errores.[/]",
+            )
 
     def on_file_selected(
         self,

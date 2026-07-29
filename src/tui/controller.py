@@ -18,6 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CLI_ENTRYPOINT = PROJECT_ROOT / "src" / "logguard_guarani.py"
 SOC_REPORTS_DIR = PROJECT_ROOT / "soc_agent" / "reports"
 EVENTS_FILE = PROJECT_ROOT / "outputs" / "eventos.jsonl"
+EXAMPLE_LOG = PROJECT_ROOT / "examples" / "apache_demo.log"
 
 
 @dataclass(slots=True)
@@ -144,27 +145,32 @@ class LogGuardController:
     ) -> list[Path]:
 
         if self.config.logs_directory is None:
-            return []
+            files = []
+        elif not self.config.logs_directory.exists():
+            files = []
+        else:
+            extensions = {
+                ".log",
+                ".1",
+                ".2",
+                ".3",
+                ".4",
+                ".5",
+            }
 
-        if not self.config.logs_directory.exists():
-            return []
+            files = []
 
-        extensions = {
-            ".log",
-            ".1",
-            ".2",
-            ".3",
-            ".4",
-            ".5",
-        }
+            for file in self.config.logs_directory.rglob("*"):
+                if file.is_file() and any(
+                    file.name.endswith(ext) for ext in extensions
+                ):
+                    files.append(file)
+        files = sorted(files)
 
-        files = []
+        if EXAMPLE_LOG.exists():
+            files.append(EXAMPLE_LOG)
 
-        for file in self.config.logs_directory.rglob("*"):
-            if file.is_file() and any(file.name.endswith(ext) for ext in extensions):
-                files.append(file)
-
-        return sorted(files)
+        return files
 
     def status(self) -> dict:
         return {

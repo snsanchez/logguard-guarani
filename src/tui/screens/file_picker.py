@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import OptionList
@@ -20,6 +21,9 @@ class FilePickerScreen(ModalScreen[Path | None]):
 
         self._files = files
         self._root = root
+        self._example = (
+            Path(__file__).resolve().parents[3] / "examples" / "apache_demo.log"
+        )
 
     def _human_size(self, size: int) -> str:
         for unit in ("B", "KB", "MB", "GB"):
@@ -33,10 +37,19 @@ class FilePickerScreen(ModalScreen[Path | None]):
         menu = OptionList()
 
         for file in self._files:
-            relative = str(file.relative_to(self._root))
             size = self._human_size(file.stat().st_size)
 
-            menu.add_option(f"{relative} ({size})")
+            if file == self._example:
+                label = Text.from_markup(
+                    f"[bold yellow]★ apache_demo.log[/] "
+                    f"[dim](Primer análisis · {size})[/]"
+                )
+            else:
+                relative = str(file.relative_to(self._root))
+                label = Text(f"{relative} ({size})")
+
+            menu.add_option(label)
+
         yield menu
 
     def on_option_list_option_selected(
