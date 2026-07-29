@@ -27,9 +27,6 @@
   </p>
 </div>
 
----
-
-LogGuard Guaraní es una plataforma offline-first para el análisis defensivo de logs Apache.
 
 Combina detección heurística, clasificación mediante Machine Learning, enriquecimiento con inteligencia de amenazas y un **agente SOC** asistido por IA para ayudar al analista a interpretar eventos de alto riesgo.
 
@@ -49,11 +46,23 @@ El proyecto fue desarrollado como prueba de concepto en el LIA (Laboratorio de I
 - Interfaz CLI para automatización
 - Arquitectura modular y extensible
 
+
+| Funcionalidad                     | CLI | TUI |
+| ----------------------------------| :-: | :-: |
+| Analizar logs                     |  ✅  |  ✅  |
+| Actualización de conocimiento     |  ✅  |  ✅  |
+| Reportes SOC                      |  ✅  |  ✅  |
+| Renderizado Markdown              |  ❌  |  ✅  |
+| Selector de archivos interactivo  |  ❌  |  ✅  |
+| Configuración persistente         |  ❌  |  ✅  |
+
 ---
 
 # Interfaz TUI
-
-LogGuard v4 incorpora una **Text User Interface (TUI)** desarrollada con Textual que facilita su uso desde una interfaz moderna e interactiva.
+Ingrese con:
+```bash
+python3 src/tui/app.py
+```
 
 Permite:
 
@@ -76,15 +85,14 @@ Toda la lógica continúa ejecutándose mediante la CLI oficial de LogGuard, por
 
 <p align="center">
 
-<!-- Screenshot TUI -->
-
-</p>
+<img src="docs/img/tui_home.png"></img>
+</p->
 
 ---
 
 # Interfaz CLI
 
-LogGuard CLI resulta ideal para automatización, cron, Docker y servidores sin interfaz interactiva.
+Resulta ideal para automatización, cron, Docker y servidores sin interfaz interactiva.
 
 Ejemplo básico:
 
@@ -136,7 +144,7 @@ Es el punto de partida recomendado para conocer el funcionamiento de la herramie
 
 ---
 
-# Instalación
+# Instalación y configuración
 
 ```bash
 python3 -m venv .venv
@@ -146,14 +154,20 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Para utilizar el agente SOC es necesario crear un archivo `.env` en la raíz del proyecto.
+
+```
+GEMINI_MODEL=gemini-2.5-flash-lite
+GOOGLE_API_KEY=TU_API_KEY
+```
+
+La API Key puede obtenerse gratuitamente desde: https://aistudio.google.com/
+
 ---
 
 
-## Características principales
 
 ### Pipeline de análisis
-
-LogGuard implementa un pipeline completo:
 
 ```
 Apache Logs
@@ -178,22 +192,6 @@ Markdown Report
 ```
 
 > Para el detalle completo de cada etapa, modelos de datos y la separación entre el pipeline de detección (determinístico) y el de razonamiento (agente SOC), ver la [documentación de arquitectura](https://snsanchez.github.io/logguard-guarani/#architecture-overview).
-
----
-
-## Vista previa
-
-Resumen de eventos agrupado por IP de origen:
-
-<p align="center">
-  <img src="docs/img/analisis.png" alt="Resumen de análisis de LogGuard Guaraní agrupado por IP" width="85%">
-</p>
-
-Fragmento de un reporte generado por el agente SOC:
-
-<p align="center">
-  <img src="docs/img/reporte_SOC.png" alt="Reporte SOC generado por LogGuard Guaraní" width="85%">
-</p>
 
 ---
 # Docker
@@ -234,12 +232,11 @@ El artículo completo, con metodología, resultados y referencias, está disponi
 
 ## Autores
 
-Desarrollado en el **Laboratorio de Informática Aplicada (LIA)**, Universidad Nacional de Río Negro — Sede Atlántica, Viedma.
-
 - Santiago Nicolás Sánchez
 - Nicolás García
 - Nicolás Castro
 ---
+
 ## Contribuciones
 
 ¿Encontraste un bug o tenés una idea para mejorar el proyecto? Los [issues](https://github.com/snsanchez/logguard-guarani/issues) y pull requests son bienvenidos. Si vas a proponer un cambio grande, abrí primero un issue para discutirlo.
@@ -247,9 +244,9 @@ Desarrollado en el **Laboratorio de Informática Aplicada (LIA)**, Universidad N
 ---
 ## Seguridad
 
-Este repositorio no contiene logs reales ni información institucional sensible.
+Este repositorio no contiene logs institucionales ni información sensible.
 
-Los datos utilizados durante el desarrollo fueron excluidos del repositorio por motivos de privacidad y seguridad.
+Todos los ejemplos incluidos fueron generados exclusivamente con fines educativos y de demostración.
 
 ---
 ## Licencia
