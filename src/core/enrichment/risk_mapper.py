@@ -15,7 +15,7 @@ def _risk_level(score: float) -> RiskLevel:
     if score >= 90:
         return RiskLevel.CRITICAL
 
-    if score >= 70:
+    if score >= 75:
         return RiskLevel.HIGH
 
     if score >= 40:
@@ -43,6 +43,7 @@ def build_enriched_event(
     event: AnalysisEvent,
 ) -> EnrichedEvent:
 
+    score = min(event.score, 100.0)
     return EnrichedEvent(
         timestamp=event.fecha,
         source_ip=event.ip,
@@ -52,8 +53,8 @@ def build_enriched_event(
         user_agent=event.ua,
         evidence=EventEvidence(
             heuristics=event.razones,
-            score=event.score,
-            risk_level=_risk_level(event.score),
+            score=score,
+            risk_level=_risk_level(score),
             ml_prediction=_ml_prediction(event.ml_prediction),
             ml_confidence=event.ml_confidence,
         ),

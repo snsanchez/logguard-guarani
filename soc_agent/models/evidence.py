@@ -54,7 +54,10 @@ class EventEvidence(BaseModel):
     @model_validator(mode="after")
     def validate_evidence(self):
 
-        if self.score >= 75 and self.risk_level != RiskLevel.HIGH:
+        if self.score >= 75 and self.risk_level not in (
+            RiskLevel.HIGH,
+            RiskLevel.CRITICAL,
+        ):
             raise ValueError("High score requires HIGH risk level.")
 
         return self
