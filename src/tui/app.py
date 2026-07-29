@@ -87,11 +87,21 @@ class LogGuardApp(App):
             "Sistema de análisis defensivo de logs Apache para el SIU Guaraní."
         )
         console.write("")
+        console.write("Primeros pasos")
+        console.write("")
+        console.write("  • Configure la carpeta de logs desde el menú.")
         console.write(
-            "Asegurese de configurar la carpeta de logs y el API de Gemini antes de usar LogGuard Guaraní, puede consultar el menú para ver cómo hacerlo."
+            "  • Configure su API Key de Gemini antes de generar reportes SOC."
         )
         console.write("")
-        console.write("Seleccione una opción del menú para comenzar.")
+        console.write("¿Quiere probar LogGuard rápidamente?")
+        console.write("")
+        console.write("  • Seleccione 'Analizar archivo' y elija ★ apache_demo.log.")
+        console.write(
+            "  • Luego abra el reporte de ejemplo en examples/apache_demo_report.md."
+        )
+        console.write("")
+        console.write("Disfrute de LogGuard!")
 
     def update_status(
         self,
