@@ -26,6 +26,11 @@
   </p>
 </div>
 
+<video src="https://github.com/user-attachments/assets/c075f320-f171-4681-a802-a6458640b0d0"
+       controls
+       width="900">
+</video>
+
 Combina detección heurística, clasificación mediante Machine Learning, enriquecimiento con inteligencia de amenazas y un **agente SOC** asistido por IA para ayudar al analista a interpretar eventos de alto riesgo.
 
 El proyecto fue desarrollado como prueba de concepto en el LIA (Laboratorio de Informática Aplicada) para el ecosistema **SIU Guaraní** de la Universidad Nacional de Río Negro, aunque su arquitectura resulta aplicable a cualquier servidor Apache.
@@ -77,13 +82,6 @@ Toda la lógica continúa ejecutándose mediante la CLI oficial de LogGuard, por
 ---
 
 ## Vista previa
-
-<video src="https://github.com/user-attachments/assets/c075f320-f171-4681-a802-a6458640b0d0"
-       controls
-       width="900">
-</video>
-
-<!-- VIDEO -->
 
 <p align="center">
 
