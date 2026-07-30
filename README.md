@@ -78,7 +78,10 @@ Toda la lógica continúa ejecutándose mediante la CLI oficial de LogGuard, por
 
 ## Vista previa
 
-> Próximamente se incorporará un video de demostración.
+<video src="https://github.com/user-attachments/assets/c075f320-f171-4681-a802-a6458640b0d0"
+       controls
+       width="900">
+</video>
 
 <!-- VIDEO -->
 
