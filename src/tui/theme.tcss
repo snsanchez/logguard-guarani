@@ -61,6 +61,7 @@ OptionList > .option-list--option-disabled {
 
 #main {
     layout: vertical;
+    width: 1fr;
 }
 
 #status {
@@ -70,6 +71,7 @@ OptionList > .option-list--option-disabled {
     border: heavy #7a2015;
     background: #0e0f12;
     color: #9a9a9a;
+    width: 100%;
 }
 
 #console {
@@ -190,4 +192,15 @@ Dialog, #modal-box {
 #save-path:hover {
     background: #c0392b;
     color: #0b0c0e;
+}
+
+#buttons {
+    height: auto;
+    align-horizontal: center;
+    margin-top: 1;
+}
+
+#buttons Button {
+    width: 18;
+    margin-left: 1;
 }

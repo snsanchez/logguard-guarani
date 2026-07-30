@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 APP_NAME = "logguard_guarani"
 CONFIG_DIR = Path.home() / ".config" / APP_NAME
 CONFIG_FILE = CONFIG_DIR / "config.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_LOG_DIR = PROJECT_ROOT / "examples"
 
 
 class TUIConfig(BaseModel):
@@ -20,6 +22,10 @@ class TUIConfig(BaseModel):
         if value is None:
             return value
         return value.expanduser().resolve()
+
+    @property
+    def effective_logs_directory(self) -> Path:
+        return self.logs_directory or DEFAULT_LOG_DIR
 
 
 class ConfigManager:

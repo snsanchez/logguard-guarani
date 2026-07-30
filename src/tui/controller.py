@@ -144,9 +144,9 @@ class LogGuardController:
         self,
     ) -> list[Path]:
 
-        if self.config.logs_directory is None:
-            files = []
-        elif not self.config.logs_directory.exists():
+        logs_dir = self.config.effective_logs_directory
+
+        if not logs_dir.exists():
             files = []
         else:
             extensions = {
@@ -160,7 +160,7 @@ class LogGuardController:
 
             files = []
 
-            for file in self.config.logs_directory.rglob("*"):
+            for file in logs_dir.rglob("*"):
                 if file.is_file() and any(
                     file.name.endswith(ext) for ext in extensions
                 ):

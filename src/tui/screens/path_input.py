@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label
 
@@ -29,16 +29,28 @@ class PathInputScreen(ModalScreen[Path | None]):
                 id="path-input",
             )
 
-            yield Button(
-                "Guardar",
-                id="save-path",
-                variant="primary",
-            )
+            with Horizontal(id="buttons"):
+                yield Button(
+                    "Guardar",
+                    id="save-path",
+                    variant="primary",
+                )
+
+                yield Button(
+                    "Por defecto",
+                    id="default-path",
+                    variant="default",
+                )
 
     def on_button_pressed(
         self,
         event: Button.Pressed,
     ) -> None:
+
+        if event.button.id == "default-path":
+            DEFAULT_PATH = Path("__DEFAULT__")
+            self.dismiss(DEFAULT_PATH)
+            return
 
         text = self.query_one(
             "#path-input",
@@ -46,7 +58,10 @@ class PathInputScreen(ModalScreen[Path | None]):
         ).value.strip()
 
         if not text:
-            self.dismiss(None)
+            self.notify(
+                "Ingrese una carpeta o utilice 'Por defecto'.",
+                severity="warning",
+            )
             return
 
         path = Path(text).expanduser().resolve()

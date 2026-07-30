@@ -2,7 +2,7 @@ import platform
 from pathlib import Path
 
 from commands import MENU_COMMANDS, CommandID
-from config import ConfigManager
+from config import DEFAULT_LOG_DIR, ConfigManager
 from controller import LogGuardController, RunningProcess
 from rich.text import Text
 from screens.file_picker import FilePickerScreen
@@ -109,9 +109,11 @@ class LogGuardApp(App):
     ) -> None:
 
         label = self.query_one("#status", Label)
-        logs_dir = self.config.logs_directory
+        logs_dir = self.config.effective_logs_directory
+
         if logs_dir is None:
-            location = "Sin configurar"
+            # para no poner "Predeterminado"
+            location = self._short_path(self.config.effective_logs_directory)
         else:
             location = self._short_path(logs_dir)
         label.update(f"Estado: {status:<18}{location}")
@@ -121,7 +123,7 @@ class LogGuardApp(App):
         path: Path,
     ) -> str:
         text = str(path)
-        MAX = 40
+        MAX = 34
         if len(text) <= MAX:
             return text
         return "..." + text[-(MAX - 3) :]
@@ -337,7 +339,7 @@ class LogGuardApp(App):
             return
 
         self.push_screen(
-            FilePickerScreen(files, self.config.logs_directory),
+            FilePickerScreen(files, self.config.effective_logs_directory),
             self.on_file_selected,
         )
 
@@ -346,15 +348,31 @@ class LogGuardApp(App):
         self,
         path: Path | None,
     ) -> None:
+
         if path is None:
             return
-        self.config.logs_directory = path
+        if path == DEFAULT_LOG_DIR:
+            self.config.logs_directory = None
+            console = self.query_one("#console", RichLog)
+            console.clear()
+            console.write("Se restauró la carpeta predeterminada.")
+        else:
+            self.config.logs_directory = path
+            console = self.query_one("#console", RichLog)
+            console.clear()
+            console.write("Carpeta configurada correctamente.")
+            console.write("")
+            console.write(str(path))
+
         self.config_manager.save()
-        console = self.query_one("#console", RichLog)
-        console.clear()
-        console.write("Carpeta configurada correctamente.")
-        console.write("")
-        console.write(str(path))
+        self.update_status("Listo")
+
+    def use_default_logs_directory(self) -> None:
+
+        self.config.logs_directory = None
+        self.config_manager.save()
+
+        self.update_status("Listo")
 
     def configure_logs_directory(self):
         self.push_screen(
