@@ -1,34 +1,21 @@
 from textual.widgets import Static
 
+# jp2a "archivo" --size=32x14
 RESTING = r"""
-     __
- __(o )>
- \ <_. )
-  `---'
-"""
-
-
-WORKING = r"""
-     __
- __(O )>
- \ <_\ )
-  `---'
-"""
-
-
-SUCCESS = r"""
-     __
- __(^ )>
- \ <_. )
-  `---'
-"""
-
-
-ERROR = r"""
-     __
- __(x )>
- \ <_. )
-  `---'
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMWNKKKKNMMMMMMMMMMMMMMMMM
+MMMMWkl,........;o0MMMMMMMMMMMMM
+MMKc....':cc:,,'...,xWMMMMMMMMMM
+Wl..,o0WMMMOoxkcc:,'.,codkOKXWMM
+'.oXWWMWKON   K'''','........'oK
+xNNXkl,...:dldc..'.    .,cx0NMMM
+0o,...........':::;'.oXMMMMMMMMM
+.. .........'cccc:::0MMMMMMMMMMM
+.. .........llll:::xMMMMMMMMMMMM
+...  ......,llllcccKMMMMMMMMMMMM
+,,'.........:oollll0MMMMMMMMMMMM
+cllooc;'.....,colll:0MMMMMMMMMMM
+ccclloooc......:oo:..0MMMMMMMMMM
 """
 
 

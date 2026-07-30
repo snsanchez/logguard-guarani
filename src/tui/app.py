@@ -17,9 +17,9 @@ from widgets.logo import RESTING, LogoWidget
 class LogGuardApp(App):
     CSS_PATH = "theme.tcss"
 
-    TITLE = "LogGuard Guaraní"
+    TITLE = "LogGuard Guaraní TUI"
 
-    SUB_TITLE = "v4"
+    # SUB_TITLE = "v4"
 
     BINDINGS = [
         ("q", "quit", "Salir"),
@@ -45,7 +45,7 @@ class LogGuardApp(App):
         with Horizontal():
             with Vertical(id="sidebar"):
                 yield Label(
-                    "LogGuard",
+                    "Menú",
                     id="sidebar-title",
                 )
 
@@ -62,11 +62,15 @@ class LogGuardApp(App):
                 )
 
             with Vertical(id="main"):
-                yield Label(
-                    "Estado: Listo",
-                    id="status",
-                )
-
+                with Vertical(id="status"):
+                    yield Label(
+                        "Estado: Listo",
+                        id="status-left",
+                    )
+                    yield Label(
+                        "",
+                        id="status-right",
+                    )
                 yield RichLog(
                     id="console",
                     wrap=True,
@@ -81,7 +85,7 @@ class LogGuardApp(App):
 
         console.clear()
 
-        console.write("LogGuard Guaraní v4")
+        console.write("LogGuard Guaraní")
         console.write("")
         console.write(
             "Sistema de análisis defensivo de logs Apache para el SIU Guaraní."
@@ -108,15 +112,12 @@ class LogGuardApp(App):
         status: str,
     ) -> None:
 
-        label = self.query_one("#status", Label)
-        logs_dir = self.config.effective_logs_directory
+        left = self.query_one("#status-left", Label)
+        right = self.query_one("#status-right", Label)
 
-        if logs_dir is None:
-            # para no poner "Predeterminado"
-            location = self._short_path(self.config.effective_logs_directory)
-        else:
-            location = self._short_path(logs_dir)
-        label.update(f"Estado: {status:<18}{location}")
+        left.update(f"Estado: {status}")
+        logs_dir = self.config.effective_logs_directory
+        right.update(self._short_path(logs_dir))
 
     def _short_path(
         self,
@@ -351,15 +352,14 @@ class LogGuardApp(App):
 
         if path is None:
             return
+        console = self.query_one("#console", RichLog)
+        console.clear()
+
         if path == DEFAULT_LOG_DIR:
             self.config.logs_directory = None
-            console = self.query_one("#console", RichLog)
-            console.clear()
             console.write("Se restauró la carpeta predeterminada.")
         else:
             self.config.logs_directory = path
-            console = self.query_one("#console", RichLog)
-            console.clear()
             console.write("Carpeta configurada correctamente.")
             console.write("")
             console.write(str(path))

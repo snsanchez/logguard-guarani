@@ -1,4 +1,3 @@
-
 Screen {
     layout: horizontal;
     background: #0b0c0e;
@@ -8,7 +7,7 @@ Screen {
 /* ── Sidebar ─────────────────────────────────────────────── */
 
 #sidebar {
-    width: 34;
+    width: 36;
     border: heavy #7a2015;
     background: #0e0f12;
     padding: 0 1;
@@ -23,7 +22,6 @@ Screen {
     text-style: bold;
     height: 3;
     color: #e05a4a;
-    border-bottom: solid #2a1512;
 }
 
 OptionList {
@@ -66,12 +64,23 @@ OptionList > .option-list--option-disabled {
 
 #status {
     height: 3;
-    content-align: left middle;
-    padding: 0 2;
+    layout: horizontal;
     border: heavy #7a2015;
     background: #0e0f12;
-    color: #9a9a9a;
     width: 100%;
+    padding: 0 2;
+}
+
+#status-left {
+    width: 1fr;
+    content-align: left middle;
+    color: #d4d2cf;
+}
+
+#status-right {
+    width: auto;
+    content-align: right middle;
+    color: #9a9a9a;
 }
 
 #console {
@@ -85,6 +94,7 @@ OptionList > .option-list--option-disabled {
     scrollbar-color-hover: #c0392b;
     scrollbar-color-active: #e05a4a;
     scrollbar-background: #08090a;
+    scrollbar-gutter: stable;
 }
 
 #console:focus {
@@ -131,29 +141,24 @@ ModalScreen {
     background: rgba(0, 0, 0, 0.7);
 }
 
-Dialog, #modal-box {
+Dialog,
+#modal-box {
     width: 60;
     height: auto;
-    border: heavy #c0392b;
+    border: round #7a2015;
     background: #0e0f12;
     padding: 1 2;
     color: #d4d2cf;
 }
 
-
 #logo {
-
-    height: 6;
-
-    width: 100%;
-
-    content-align: left bottom;
-
+    height: auto;
+    dock: bottom;
+    width: auto;
     color: #7a2015;
-
-    padding-left: 1;
+    padding-left: 0;
+    margin-top: 1;
 }
-
 
 /* ── Path Input Dialog ─────────────────────────────────── */
 
