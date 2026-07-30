@@ -13,7 +13,6 @@
   <p>
     <img alt="License" src="https://img.shields.io/badge/license-GPLv3-blue">
     <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-blue">
-    <img alt="Docker" src="https://img.shields.io/badge/docker-ready-2496ED">
     <img alt="Docs" src="https://img.shields.io/badge/docs-GitHub%20Pages-success">
     <img alt="Status" src="https://img.shields.io/badge/status-proof--of--concept-yellow">
   </p>
@@ -26,7 +25,6 @@
     🐛 <a href="https://github.com/snsanchez/logguard-guarani/issues">Reportar un problema</a>
   </p>
 </div>
-
 
 Combina detección heurística, clasificación mediante Machine Learning, enriquecimiento con inteligencia de amenazas y un **agente SOC** asistido por IA para ayudar al analista a interpretar eventos de alto riesgo.
 
@@ -46,20 +44,21 @@ El proyecto fue desarrollado como prueba de concepto en el LIA (Laboratorio de I
 - Interfaz CLI para automatización
 - Arquitectura modular y extensible
 
-
-| Funcionalidad                     | CLI | TUI |
-| ----------------------------------| :-: | :-: |
-| Analizar logs                     |  ✅  |  ✅  |
-| Actualización de conocimiento     |  ✅  |  ✅  |
-| Reportes SOC                      |  ✅  |  ✅  |
-| Renderizado Markdown              |  ❌  |  ✅  |
-| Selector de archivos interactivo  |  ❌  |  ✅  |
-| Configuración persistente         |  ❌  |  ✅  |
+| Funcionalidad                    | CLI | TUI |
+| -------------------------------- | :-: | :-: |
+| Analizar logs                    | ✅  | ✅  |
+| Actualización de conocimiento    | ✅  | ✅  |
+| Reportes SOC                     | ✅  | ✅  |
+| Renderizado Markdown             | ❌  | ✅  |
+| Selector de archivos interactivo | ❌  | ✅  |
+| Configuración persistente        | ❌  | ✅  |
 
 ---
 
 # Interfaz TUI
+
 Ingrese con:
+
 ```bash
 python3 src/tui/app.py
 ```
@@ -92,7 +91,7 @@ Toda la lógica continúa ejecutándose mediante la CLI oficial de LogGuard, por
 
 # Interfaz CLI
 
-Resulta ideal para automatización, cron, Docker y servidores sin interfaz interactiva.
+Resulta ideal para automatización, cron y servidores sin interfaz interactiva.
 
 Ejemplo básico:
 
@@ -165,8 +164,6 @@ La API Key puede obtenerse gratuitamente desde: https://aistudio.google.com/
 
 ---
 
-
-
 ### Pipeline de análisis
 
 ```
@@ -194,37 +191,12 @@ Markdown Report
 > Para el detalle completo de cada etapa, modelos de datos y la separación entre el pipeline de detección (determinístico) y el de razonamiento (agente SOC), ver la [documentación de arquitectura](https://snsanchez.github.io/logguard-guarani/#architecture-overview).
 
 ---
-# Docker
-
-La imagen Docker incluye la aplicación completa:
-
-- CLI
-- TUI
-- Base de conocimiento
-- SOC Agent
-
-Construcción:
-
-```bash
-docker build \
-    -t san2s/logguard-guarani:4.0 .
-```
-
-Ejecución mediante CLI:
-
-```bash
-docker run --rm \
-    -v /ruta/logs:/data \
-    san2s/logguard-guarani:4.0 \
-    /data/access.log
-```
----
 
 ## Cómo citar
 
 Si utilizás LogGuard Guaraní en un trabajo académico o de investigación, podés citar el short paper asociado al proyecto:
 
-> Sánchez, S. N., García, N., Castro, N. (2026). *LogGuard Guaraní: Plataforma Inteligente para el Análisis Defensivo de Logs Apache mediante un Agente SOC e Inteligencia de Amenazas*. Universidad Nacional de Río Negro — Laboratorio de Informática Aplicada (LIA).
+> Sánchez, S. N., García, N., Castro, N. (2026). _LogGuard Guaraní: Plataforma Inteligente para el Análisis Defensivo de Logs Apache mediante un Agente SOC e Inteligencia de Amenazas_. Universidad Nacional de Río Negro — Laboratorio de Informática Aplicada (LIA).
 
 El artículo completo, con metodología, resultados y referencias, está disponible en la [sección Short Paper de la documentación](https://snsanchez.github.io/logguard-guarani/#paper).
 
@@ -235,6 +207,7 @@ El artículo completo, con metodología, resultados y referencias, está disponi
 - Santiago Nicolás Sánchez
 - Nicolás García
 - Nicolás Castro
+
 ---
 
 ## Contribuciones
@@ -242,6 +215,7 @@ El artículo completo, con metodología, resultados y referencias, está disponi
 ¿Encontraste un bug o tenés una idea para mejorar el proyecto? Los [issues](https://github.com/snsanchez/logguard-guarani/issues) y pull requests son bienvenidos. Si vas a proponer un cambio grande, abrí primero un issue para discutirlo.
 
 ---
+
 ## Seguridad
 
 Este repositorio no contiene logs institucionales ni información sensible.
@@ -249,6 +223,7 @@ Este repositorio no contiene logs institucionales ni información sensible.
 Todos los ejemplos incluidos fueron generados exclusivamente con fines educativos y de demostración.
 
 ---
+
 ## Licencia
 
 Distribuido bajo licencia **GPL v3**. Ver [`LICENSE`](LICENSE) para más información.
