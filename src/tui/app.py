@@ -94,6 +94,7 @@ class LogGuardApp(App):
         console.write("Primeros pasos")
         console.write("")
         console.write("  • Configure la carpeta de logs desde el menú.")
+        console.write("  • Actualice la base de conocimiento (online).")
         console.write(
             "  • Configure su API Key de Gemini antes de generar reportes SOC."
         )
@@ -117,7 +118,7 @@ class LogGuardApp(App):
 
         left.update(f"Estado: {status}")
         logs_dir = self.config.effective_logs_directory
-        right.update(self._short_path(logs_dir))
+        right.update(f"Logs: {self._short_path(logs_dir)}")
 
     def _short_path(
         self,

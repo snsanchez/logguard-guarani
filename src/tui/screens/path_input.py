@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from config import DEFAULT_LOG_DIR
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
@@ -48,8 +49,7 @@ class PathInputScreen(ModalScreen[Path | None]):
     ) -> None:
 
         if event.button.id == "default-path":
-            DEFAULT_PATH = Path("__DEFAULT__")
-            self.dismiss(DEFAULT_PATH)
+            self.dismiss(DEFAULT_LOG_DIR)
             return
 
         text = self.query_one(
