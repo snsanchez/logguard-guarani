@@ -17,9 +17,9 @@ from widgets.logo import RESTING, LogoWidget
 class LogGuardApp(App):
     CSS_PATH = "theme.tcss"
 
-    TITLE = "LogGuard Guaraní TUI"
+    TITLE = "TUI"
 
-    # SUB_TITLE = "v4"
+    SUB_TITLE = "v4.0"
 
     BINDINGS = [
         ("q", "quit", "Salir"),
@@ -45,7 +45,7 @@ class LogGuardApp(App):
         with Horizontal():
             with Vertical(id="sidebar"):
                 yield Label(
-                    "Menú",
+                    "LogGuard Guaraní",
                     id="sidebar-title",
                 )
 

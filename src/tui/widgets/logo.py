@@ -21,17 +21,4 @@ ccclloooc......:oo:..0MMMMMMMMMM
 
 class LogoWidget(Static):
     def resting(self):
-
         self.update(RESTING)
-
-    def working(self):
-
-        self.update(WORKING)
-
-    def success(self):
-
-        self.update(SUCCESS)
-
-    def error(self):
-
-        self.update(ERROR)
