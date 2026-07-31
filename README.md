@@ -26,9 +26,7 @@
   </p>
 </div>
 
-<video src="https://github.com/user-attachments/assets/aa07019c-8af0-4a5a-bd56-08241b176cb2"
-       controls
-       width="900">
+<video src="https://github.com/user-attachments/assets/aa07019c-8af0-4a5a-bd56-08241b176cb2" width="100%" controls autoplay muted loop playsinline>
 </video>
 
 Combina detección heurística, clasificación mediante Machine Learning, enriquecimiento con inteligencia de amenazas y un **agente SOC** asistido por IA para ayudar al analista a interpretar eventos de alto riesgo.
