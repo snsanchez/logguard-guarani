@@ -856,7 +856,6 @@
 
             <div class="section-label">Uso</div>
             <a href="#cli">Referencia CLI</a>
-            <a href="#docker">Docker</a>
             <a href="#reportes">Reportes</a>
             <a href="#jsonl">Formato JSONL</a>
 
@@ -887,10 +886,9 @@
         <!-- ── OVERVIEW ─────────────────────────────────────────── -->
         <section id="overview">
             <div class="hero">
-                <div class="title-line">LogGuard Guaraní v3.0</div>
+                <div class="title-line">LogGuard Guaraní</div>
                 <div class="meta">
-                    $ python3 src/logguard_guarani.py access.log --razonar
-                    --exportar-json outputs/eventos.jsonl
+                    $ python3 src/tui/app.py
                 </div>
                 <div class="desc">
                     Plataforma de análisis defensivo de logs Apache
@@ -924,6 +922,12 @@
                 mayor riesgo — un agente SOC que interpreta el evento
                 enriquecido y redacta un reporte técnico.
             </p>
+
+            <!-- VIDEO DEMO -->
+            <video src="https://github.com/user-attachments/assets/aa07019c-8af0-4a5a-bd56-08241b176cb2" width="100%"
+                controls autoplay muted loop playsinline>
+                Tu navegador no soporta la etiqueta <code>video</code>.
+            </video>
 
             <div class="notice info">
                 <strong>Qué NO es LogGuard Guaraní</strong>
@@ -968,10 +972,6 @@
                     de alto riesgo y redacta recomendaciones
                 </li>
                 <li>Exportación a Markdown, JSON y JSONL</li>
-                <li>
-                    Empaquetado en Docker, sin necesidad de instalar
-                    dependencias localmente
-                </li>
             </ul>
 
             <h2>Requisitos</h2>
@@ -1256,10 +1256,7 @@ GOOGLE_API_KEY=TU_API_KEY</code></pre>
                 ejecución del motor de LogGuard en tiempo real.
             </p>
 
-            <p style="text-align:center;margin:30px 0;">
-                <!-- VIDEO DEMO -->
-            </p>
-
+            <img src="img/tui_home.png" alt="Captura de pantalla de la interfaz TUI de LogGuard Guaraní" width="100%" />
             <h3>Funciones disponibles</h3>
 
             <table>
@@ -2755,44 +2752,6 @@ python3 src/logguard_guarani.py \
   --online</code></pre>
         </section>
 
-        <!-- ── DOCKER ───────────────────────────────────────────────── -->
-        <section id="docker">
-            <h1>Docker</h1>
-
-            <p>
-                LogGuard Guaraní puede ejecutarse completamente en
-                contenedor, sin necesidad de instalar Python ni dependencias
-                en el host.
-            </p>
-
-            <h2>Build</h2>
-            <pre><code>docker build \
-  -t san2s/logguard-guarani:3.0.0 \
-  -f docker/Dockerfile .</code></pre>
-
-            <h2>Run</h2>
-            <pre><code>docker run --rm \
-  -v /ruta/logs:/data \
-  san2s/logguard-guarani:3.0.0 \
-  /data/access.log --solo-anomalos</code></pre>
-
-            <div class="notice info">
-                <strong>Volúmenes</strong>
-                El directorio con los logs a analizar se monta como volumen
-                (<code>-v /ruta/logs:/data</code>). El contenedor solo tiene
-                acceso a lo que se monta explícitamente — no persiste estado
-                entre ejecuciones salvo que se monten también los
-                directorios de salida o de base de conocimiento.
-            </div>
-
-            <h2>Ejemplo con exportación y razonamiento</h2>
-            <pre><code>docker run --rm \
-  -v /ruta/logs:/data \
-  -v /ruta/outputs:/app/outputs \
-  san2s/logguard-guarani:3.0.0 \
-  /data/access.log --razonar --exportar-json /app/outputs/eventos.jsonl</code></pre>
-        </section>
-
         <!-- ── REPORTES ─────────────────────────────────────────────── -->
         <section id="reportes">
             <h1>Reportes</h1>
@@ -2896,29 +2855,6 @@ python3 src/logguard_guarani.py \
         <!-- ── ORGANIZACIÓN ─────────────────────────────────────────── -->
         <section id="organizacion">
             <h1>Organización del repositorio</h1>
-
-            <div class="tree">
-                <span class="cm"># Estructura general del repositorio</span>
-                ├── src/ <span class="cm"># entrypoint de la CLI</span> ├──
-                core/
-                <span class="cm"># parser, heurísticas, scoring, clasificación, risk
-                    mapper</span>
-                ├── soc_agent/
-                <span class="cm"># agente SOC (Google ADK), prompts, serializers</span>
-                ├── knowledge/
-                <span class="cm"># base de conocimiento local + updater</span>
-                ├── docker/
-                <span class="cm"># Dockerfile y artefactos de build</span>
-                ├── docs/
-                <span class="cm"># documentación web (GitHub Pages)</span>
-                ├── datasets/
-                <span class="cm"># datasets para entrenamiento del modelo SVM</span>
-                ├── tests/
-                <span class="cm"># suite de tests del pipeline</span> └──
-                requirements.txt
-                <span class="cm"># dependencias del proyecto</span>
-            </div>
-
             <table>
                 <thead>
                     <tr>
@@ -2936,7 +2872,7 @@ python3 src/logguard_guarani.py \
                         </td>
                     </tr>
                     <tr>
-                        <td><code>core/</code></td>
+                        <td><code>/src/core/</code></td>
                         <td>
                             Componentes centrales del Detection Pipeline:
                             parser, heurísticas, scoring, clasificación,
@@ -2961,13 +2897,6 @@ python3 src/logguard_guarani.py \
                         </td>
                     </tr>
                     <tr>
-                        <td><code>docker/</code></td>
-                        <td>
-                            Definición del contenedor y artefactos
-                            necesarios para el build de imagen
-                        </td>
-                    </tr>
-                    <tr>
                         <td><code>docs/</code></td>
                         <td>
                             Documentación web publicada mediante GitHub
@@ -2988,6 +2917,18 @@ python3 src/logguard_guarani.py \
                             pipeline de detección
                         </td>
                     </tr>
+                    <tr>
+                        <td><code>examples/</code></td>
+                        <td>
+                            Log Apache de demostración <code>apache_demo.log</code> y un reporte SOC generado <code>apache_demo_report.md</code> para probar LogGuard   .
+                        </td>
+                    </tr>
+                     <tr>
+                        <td><code>src/tui/</code></td>
+                        <td>
+                            Interfaz Textual para ejecutar y administrar LogGuard de forma interactiva.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </section>
@@ -3002,21 +2943,6 @@ python3 src/logguard_guarani.py \
                 separación permite sincronizar, versionar e inspeccionar
                 cada fuente de forma independiente.
             </p>
-
-            <div class="tree">
-                <span class="cm"># Estructura interna de knowledge/</span>
-                knowledge/ ├── mitre/
-                <span class="cm"># técnicas y tácticas MITRE ATT&amp;CK</span>
-                ├── cves/
-                <span class="cm"># cache local de CVEs (NVD) y CISA KEV</span>
-                ├── playbooks/
-                <span class="cm"># playbooks defensivos usados por el SOC Agent</span>
-                ├── references/
-                <span class="cm"># matrices de severidad, OWASP Top 10, códigos
-                    HTTP</span>
-                └── metadata.json
-                <span class="cm"># versión y fecha de última sincronización</span>
-            </div>
             <table>
                 <thead>
                     <tr>
@@ -3158,11 +3084,9 @@ python3 src/logguard_guarani.py \
                     </p>
                 </div>
                 <div class="stack-card">
-                    <span class="sname">Docker</span>
+                    <span class="sname">Textual</span>
                     <p>
-                        Empaqueta el pipeline completo con sus dependencias,
-                        permitiendo ejecutar LogGuard en cualquier host sin
-                        instalar Python localmente.
+                        Framework TUI utilizado para construir la interfaz interactiva multiplataforma de LogGuard. Permite ejecutar análisis, configurar el entorno y visualizar reportes sin abandonar la terminal.
                     </p>
                 </div>
             </div>
@@ -3283,11 +3207,13 @@ python3 src/logguard_guarani.py \
                 <strong>LogGuard Guaraní: Plataforma Inteligente para el
                     Análisis Defensivo de Logs Apache mediante un Agente SOC
                     e Inteligencia de Amenazas</strong><br />
-                Santiago Nicolás Sánchez, Nicolás García, Nicolás Castro<br />
+                Santiago Nicolás Sánchez, Nicolás García Martinez, Patricio Nicolás Castro.<br />
                 Universidad Nacional de Río Negro (UNRN). Laboratorio de
                 Informática Aplicada (LIA). Sede Atlántica, Viedma, Río
                 Negro.<br />
-                <a href="mailto:santynicosanchez@gmail.com">santynicosanchez@gmail.com</a><br />
+                <a href="mailto:santynicosanchez@gmail.com">santynicosanchez@gmail.com</a> -
+                <a href="mailto:ngarciam@unrn.edu.ar">ngarciam@unrn.edu.ar</a> -
+                <a href="mailto:pcastro@unrn.edu.ar">pcastro@unrn.edu.ar</a><br />
                 2026 · Licencia GPL v3 ·
                 <a href="https://github.com/snsanchez/logguard-guarani"
                     target="_blank">github.com/snsanchez/logguard-guarani</a>
@@ -3426,7 +3352,7 @@ python3 src/logguard_guarani.py \
 
             <div class="fig-placeholder">
                 <img src="img/actualizar_kb.png"
-                    alt="Salida del comando logguard_guarani.py --actualizar-conocimiento --online" />
+                    alt="Salida del comando loggua  rd_guarani.py --actualizar-conocimiento --online" />
                 <span class="fig-label">Figura 1. Salida del comando "logguard_guarani.py
                     --actualizar-conocimiento --online"</span>
             </div>
