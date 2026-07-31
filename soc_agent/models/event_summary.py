@@ -53,7 +53,7 @@ class EventSummary(BaseModel):
     def is_suspicious(self) -> bool:
         return self.ml_prediction in (
             MLPrediction.SUSPICIOUS,
-            MLPrediction.MALICIOUS,
+            MLPrediction.ANOMALOUS,
         )
 
     @property
