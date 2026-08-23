@@ -976,10 +976,10 @@
 
             <h2>Requisitos</h2>
             <pre><code><span class="cm"># Python 3.11 o superior</span>
-python3 --version
+                    python3 --version
 
-<span class="cm"># Dependencias definidas en requirements.txt</span>
-pip install -r requirements.txt</code></pre>
+                    <span class="cm"># Dependencias definidas en requirements.txt</span>
+                    pip install -r requirements.txt</code></pre>
         </section>
 
         <!-- ── WHY ──────────────────────────────────────────────────── -->
@@ -1179,24 +1179,24 @@ pip install -r requirements.txt</code></pre>
 
             <h2>Entorno local</h2>
             <pre><code>python3 -m venv .venv
-source .venv/bin/activate
+                    source .venv/bin/activate
 
-pip install -r requirements.txt</code></pre>
+                    pip install -r requirements.txt</code></pre>
 
             <h2>Ejecución básica</h2>
             <pre><code><span class="cm"># Análisis básico</span>
-python3 src/logguard_guarani.py access.log
+                    python3 src/logguard_guarani.py access.log
 
-<span class="cm"># Mostrar solamente eventos relevantes</span>
-python3 src/logguard_guarani.py access.log --solo-anomalos
+                    <span class="cm"># Mostrar solamente eventos relevantes</span>
+                    python3 src/logguard_guarani.py access.log --solo-anomalos
 
-<span class="cm"># Ejecutar clasificación ML + agente SOC</span>
-python3 src/logguard_guarani.py access.log --razonar
+                    <span class="cm"># Ejecutar clasificación ML + agente SOC</span>
+                    python3 src/logguard_guarani.py access.log --razonar
 
-<span class="cm"># Exportar eventos enriquecidos a JSONL</span>
-python3 src/logguard_guarani.py access.log \
-  --razonar \
-  --exportar-json outputs/eventos.jsonl</code></pre>
+                    <span class="cm"># Exportar eventos enriquecidos a JSONL</span>
+                    python3 src/logguard_guarani.py access.log \
+                    --razonar \
+                    --exportar-json outputs/eventos.jsonl</code></pre>
 
             <div class="notice info">
                 <strong>Actualizar la base de conocimiento</strong>
@@ -1204,8 +1204,8 @@ python3 src/logguard_guarani.py access.log \
                 paso independiente y explícito, no ocurre automáticamente
                 durante el análisis:
                 <pre style="margin-top: 8px"><code>python3 src/logguard_guarani.py \
-  --actualizar-conocimiento \
-  --online</code></pre>
+                        --actualizar-conocimiento \
+                        --online</code></pre>
             </div>
             <h3>Configurar Google Gemini</h3>
 
@@ -1215,7 +1215,7 @@ python3 src/logguard_guarani.py access.log \
             </p>
 
             <pre><code>GEMINI_MODEL=gemini-2.5-flash-lite
-GOOGLE_API_KEY=TU_API_KEY</code></pre>
+                    GOOGLE_API_KEY=TU_API_KEY</code></pre>
 
             <p>
                 La API Key puede obtenerse gratuitamente desde
@@ -1339,8 +1339,8 @@ GOOGLE_API_KEY=TU_API_KEY</code></pre>
             </p>
 
             <pre><code>examples/
-├── apache_demo.log
-└── apache_demo_report.md</code></pre>
+                    ├── apache_demo.log
+                    └── apache_demo_report.md</code></pre>
 
             <p>
                 La interfaz resalta automáticamente este archivo para que el primer
@@ -2260,8 +2260,8 @@ GOOGLE_API_KEY=TU_API_KEY</code></pre>
             </p>
 
             <pre><code>python3 src/logguard_guarani.py \
-  --actualizar-conocimiento \
-  --online</code></pre>
+                    --actualizar-conocimiento \
+                    --online</code></pre>
 
             <h2>Knowledge Enrichment</h2>
             <p>
@@ -2673,9 +2673,9 @@ GOOGLE_API_KEY=TU_API_KEY</code></pre>
             <h1>Referencia CLI</h1>
 
             <pre><code>python3 src/logguard_guarani.py [-h] [--solo-anomalos] [--razonar]
-                                 [--exportar-json ARCHIVO]
-                                 [--actualizar-conocimiento] [--online]
-                                 archivo</code></pre>
+                    [--exportar-json ARCHIVO]
+                    [--actualizar-conocimiento] [--online]
+                    archivo</code></pre>
 
             <table>
                 <thead>
@@ -2733,23 +2733,23 @@ GOOGLE_API_KEY=TU_API_KEY</code></pre>
 
             <h2>Ejemplos</h2>
             <pre><code><span class="cm"># Análisis básico</span>
-python3 src/logguard_guarani.py access.log
+                    python3 src/logguard_guarani.py access.log
 
-<span class="cm"># Solo eventos relevantes</span>
-python3 src/logguard_guarani.py access.log --solo-anomalos
+                    <span class="cm"># Solo eventos relevantes</span>
+                    python3 src/logguard_guarani.py access.log --solo-anomalos
 
-<span class="cm"># Clasificación ML + agente SOC</span>
-python3 src/logguard_guarani.py access.log --razonar
+                    <span class="cm"># Clasificación ML + agente SOC</span>
+                    python3 src/logguard_guarani.py access.log --razonar
 
-<span class="cm"># Exportar eventos enriquecidos</span>
-python3 src/logguard_guarani.py access.log \
-  --razonar \
-  --exportar-json outputs/eventos.jsonl
+                    <span class="cm"># Exportar eventos enriquecidos</span>
+                    python3 src/logguard_guarani.py access.log \
+                    --razonar \
+                    --exportar-json outputs/eventos.jsonl
 
-<span class="cm"># Actualizar base de conocimiento</span>
-python3 src/logguard_guarani.py \
-  --actualizar-conocimiento \
-  --online</code></pre>
+                    <span class="cm"># Actualizar base de conocimiento</span>
+                    python3 src/logguard_guarani.py \
+                    --actualizar-conocimiento \
+                    --online</code></pre>
         </section>
 
         <!-- ── REPORTES ─────────────────────────────────────────────── -->
@@ -2827,21 +2827,23 @@ python3 src/logguard_guarani.py \
 
             <h2>Ejemplo simplificado de un evento exportado</h2>
             <pre><code>{
-  <span class="str">"timestamp"</span>: <span class="str">"2026-04-20T11:32:07Z"</span>,
-  <span class="str">"source_ip"</span>: <span class="str">"119.8.159.33"</span>,
-  <span class="str">"method"</span>: <span class="str">"POST"</span>,
-  <span class="str">"path"</span>: <span class="str">"/guarani/3.21/rest/v2/cobros-unrn/bloqueo"</span>,
-  <span class="str">"status_code"</span>: <span class="num">201</span>,
-  <span class="str">"user_agent"</span>: <span class="str">"python-requests/2.32.5"</span>,
-  <span class="str">"attack_type"</span>: <span class="str">"SCANNER"</span>,
-  <span class="str">"score"</span>: <span class="num">78</span>,
-  <span class="str">"risk_level"</span>: <span class="str">"CRITICAL"</span>,
-  <span class="str">"ml_prediction"</span>: <span class="str">"malicious"</span>,
-  <span class="str">"ml_confidence"</span>: <span class="num">0.91</span>,
-  <span class="str">"mitre_techniques"</span>: [<span class="str">"T1595"</span>, <span class="str">"T1190"</span>],
-  <span class="str">"related_cves"</span>: [],
-  <span class="str">"kev_flagged"</span>: <span class="kw">false</span>
-}</code></pre>
+                    <span class="str">"timestamp"</span>: <span class="str">"2026-04-20T11:32:07Z"</span>,
+                    <span class="str">"source_ip"</span>: <span class="str">"119.8.159.33"</span>,
+                    <span class="str">"method"</span>: <span class="str">"POST"</span>,
+                    <span class="str">"path"</span>: <span
+                        class="str">"/guarani/3.21/rest/v2/cobros-unrn/bloqueo"</span>,
+                    <span class="str">"status_code"</span>: <span class="num">201</span>,
+                    <span class="str">"user_agent"</span>: <span class="str">"python-requests/2.32.5"</span>,
+                    <span class="str">"attack_type"</span>: <span class="str">"SCANNER"</span>,
+                    <span class="str">"score"</span>: <span class="num">78</span>,
+                    <span class="str">"risk_level"</span>: <span class="str">"CRITICAL"</span>,
+                    <span class="str">"ml_prediction"</span>: <span class="str">"malicious"</span>,
+                    <span class="str">"ml_confidence"</span>: <span class="num">0.91</span>,
+                    <span class="str">"mitre_techniques"</span>: [<span class="str">"T1595"</span>, <span
+                        class="str">"T1190"</span>],
+                    <span class="str">"related_cves"</span>: [],
+                    <span class="str">"kev_flagged"</span>: <span class="kw">false</span>
+                    }</code></pre>
 
             <p>
                 Este formato está pensado para
@@ -2920,10 +2922,11 @@ python3 src/logguard_guarani.py \
                     <tr>
                         <td><code>examples/</code></td>
                         <td>
-                            Log Apache de demostración <code>apache_demo.log</code> y un reporte SOC generado <code>apache_demo_report.md</code> para probar LogGuard   .
+                            Log Apache de demostración <code>apache_demo.log</code> y un reporte SOC generado
+                            <code>apache_demo_report.md</code> para probar LogGuard .
                         </td>
                     </tr>
-                     <tr>
+                    <tr>
                         <td><code>src/tui/</code></td>
                         <td>
                             Interfaz Textual para ejecutar y administrar LogGuard de forma interactiva.
@@ -3086,7 +3089,9 @@ python3 src/logguard_guarani.py \
                 <div class="stack-card">
                     <span class="sname">Textual</span>
                     <p>
-                        Framework TUI utilizado para construir la interfaz interactiva multiplataforma de LogGuard. Permite ejecutar análisis, configurar el entorno y visualizar reportes sin abandonar la terminal.
+                        Framework TUI utilizado para construir la interfaz interactiva multiplataforma de LogGuard.
+                        Permite ejecutar análisis, configurar el entorno y visualizar reportes sin abandonar la
+                        terminal.
                     </p>
                 </div>
             </div>
@@ -3535,7 +3540,7 @@ python3 src/logguard_guarani.py \
         </section>
         <p style="text-align: center; margin-top: 2rem">
             📄
-            <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard%20Guarani%20-%20Short%20Paper.pdf"
+            <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard_Guarani%20-%20Short%20Paper.pdf"
                 target="_blank">
                 Descargar este paper en formato PDF
             </a>
@@ -3560,7 +3565,7 @@ python3 src/logguard_guarani.py \
                 clusterBkg: "#f5f5f5",
                 clusterBorder: "#d0d0d0",
             },
-            flowchart: { curve: "basis", htmlLabels: true },
+            flowchart: {curve: "basis", htmlLabels: true},
         });
     </script>
 
@@ -3581,7 +3586,7 @@ python3 src/logguard_guarani.py \
                     }
                 });
             },
-            { rootMargin: "-30% 0px -60% 0px" },
+            {rootMargin: "-30% 0px -60% 0px"},
         );
 
         sections.forEach((s) => observer.observe(s));
