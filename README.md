@@ -20,7 +20,7 @@
   <p>
     📖 <a href="https://snsanchez.github.io/logguard-guarani/"><strong>Documentación</strong></a>
     &nbsp;·&nbsp;
-    📄 <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard%20Guarani%20-%20Short%20Paper.pdf">Short paper</a>
+    📄 <a href="https://github.com/snsanchez/logguard-guarani/blob/main/docs/paper/LogGuard_Guarani%20-%20Short%20Paper.pdf">Short paper</a>
     &nbsp;·&nbsp;
     🐛 <a href="https://github.com/snsanchez/logguard-guarani/issues">Reportar un problema</a>
   </p>
